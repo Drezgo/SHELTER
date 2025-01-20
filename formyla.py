@@ -21,5 +21,6 @@ KN=1.4
 
 Azf=1.18*(Ky*Kn)*(Kzab/Kbud)*KN/(Ky+Kn)
 print("Az: ",Az)
+print (Azf," = 1.18 * ", "( ",Ky," * ",Kn,") * (",Kzab," / ",Kbud,") * ",KN," / (",Ky," + ",Kn,")")
 print("Azf: ",Azf)
 print("Az<=Azf",Az<=Azf)
