@@ -1,6 +1,8 @@
 import flet as ft
 import sqlite3
 
+RESULTS = {}
+
 def main(page: ft.Page):
     selected_option_1 = ""  # Змінна для зберігання вибраного варіанту
     result_text_1 = ft.Text("", size=16, weight="bold", color=ft.colors.GREEN)  # Динамічний текст для відображення вибору (ви обрали А-ІІ)
@@ -125,7 +127,7 @@ def main(page: ft.Page):
 
         def load_data():
             # Завантажуємо дані з бази
-            connection = sqlite3.connect("DataBases\A1.db")
+            connection = sqlite3.connect("db\MainBase.db")
             cursor = connection.cursor()
             cursor.execute("SELECT rowid, Material, Thickness FROM Uses_choice_G1")
             data = cursor.fetchall()
@@ -154,7 +156,7 @@ def main(page: ft.Page):
 
         def add_to_db(e):
             # Додаємо дані до бази
-            connection = sqlite3.connect("DataBases\A1.db")
+            connection = sqlite3.connect("db\MainBase.db")
             cursor = connection.cursor()
             material = material_dropdown.value
             thickness = txt_number_2.value
@@ -165,7 +167,7 @@ def main(page: ft.Page):
 
         def delete_row(row_id):
             # Видаляємо запис
-            connection = sqlite3.connect("DataBases\A1.db")
+            connection = sqlite3.connect("db\MainBase.db")
             cursor = connection.cursor()
             cursor.execute("DELETE FROM Uses_choice_G1 WHERE rowid = ?", (row_id,))
             connection.commit()
@@ -259,10 +261,11 @@ def main(page: ft.Page):
         nonlocal selected_option_1
         selected_option_1 = e.control.value
         result_text_1.value = f"Ви обрали: {selected_option_1}" if selected_option_1 else "Error"
+        RESULTS["option1"] = e.control.value
 
         # Отримання опису з бази даних
         if selected_option_1:
-            connection = sqlite3.connect("DataBases\A1.db")
+            connection = sqlite3.connect("db\MainBase.db")
             cursor = connection.cursor()
             cursor.execute("SELECT description FROM a1 WHERE class = ?", (selected_option_1,))
             result = cursor.fetchone()
@@ -281,7 +284,7 @@ def main(page: ft.Page):
     # Видалення таблиці вибору шарів стін (Табл Г1)
     def delete_table_G1():
         try:
-            connection = sqlite3.connect("DataBases\A1.db")
+            connection = sqlite3.connect("db\MainBase.db")
             cursor = connection.cursor()
 
             # Видалити всі рядки з таблиці Uses_choice_G1
