@@ -68,14 +68,14 @@ import pandas as pd
 import sqlite3
 import os
 
-folder_path = r"F:\UDAV\SHELTER\db\templ"
+folder_path = r"F:\UDAV\SHELTER\db\jsonTable"
 files = os.listdir(folder_path)
 print(f"Файли в директорії '{folder_path}': {files}")
 
 try:
     # Завантажуємо JSON файл у DataFrame
     table_name = "wall_materials"
-    json_path = r"F:\UDAV\SHELTER\db\templ\wall_materials.json"
+    json_path = r"F:\UDAV\SHELTER\db\jsonTable\wall_materials.json"
     if not os.path.exists(json_path):
         raise FileNotFoundError(f"Файл JSON не знайдено за шляхом: {json_path}")
     print(f"Файл JSON знайдено: {json_path}")

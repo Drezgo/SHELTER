@@ -1,13 +1,13 @@
+
 import flet as ft
 import sqlite3
 
-RESULTS = {}
-
 def main(page: ft.Page):
     selected_option_1 = ""  # Змінна для зберігання вибраного варіанту
-    result_text_1 = ft.Text("", size=16, weight="bold", color=ft.colors.GREEN)  # Динамічний текст для відображення вибору (ви обрали А-ІІ)
-    description_text_1 = ft.Text("", size=14, italic=True, color=ft.colors.GREEN, width=500)   # Текст для опису з бази даних (пояснення шо таке А-ІІ) 
+    result_text_1 = ft.Text("", size=16, weight="bold", color=ft.Colors.GREEN)  # Динамічний текст для відображення вибору (ви обрали А-ІІ)
+    description_text_1 = ft.Text("", size=14, italic=True, color=ft.Colors.GREEN, width=500)   # Текст для опису з бази даних (пояснення шо таке А-ІІ) 
     txt_number_2 = ft.TextField(value="10", text_align=ft.TextAlign.RIGHT, width=100) # Поле для введення числа
+
 
     # print(type(selected_option_1))
     # print(type(description_text))
@@ -19,6 +19,138 @@ def main(page: ft.Page):
     page.vertical_alignment = ft.MainAxisAlignment.CENTER
     page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
     # page.window.icon = "Radiation.png"
+
+    def fourth_page(e): # 4 сторінка 
+        page.controls.clear()
+        #продублювати. для промислової і житлової. іф попередня змінна = промислова, то виводять бетони одні.елсе...
+        dropdown_left_Pr1 = ft.Dropdown( #промислові
+            label="Висота будинків",  
+            options=[
+                ft.dropdown.Option(">=12"),
+                ft.dropdown.Option("8-12"),
+                ],
+                width=300
+            )
+        dropdown_left_Pr2 = ft.Dropdown( #промислові
+            label="Щільність забудови", 
+            options=[
+                ft.dropdown.Option("40"),
+                ft.dropdown.Option("30"),
+                ft.dropdown.Option("20"),
+                ft.dropdown.Option("10"),
+                ],
+                width=300
+            )
+        dropdown_left_Cuv1 = ft.Dropdown( #житлові
+            label="Висота будинків",  
+            options=[
+                ft.dropdown.Option(">=30"),
+                ft.dropdown.Option("10-30"),
+                ft.dropdown.Option("8-10")
+                ],
+                width=300
+            )
+        dropdown_left_Cuv2 = ft.Dropdown( #житлові
+            label="Щільність забудови", 
+            options=[
+                ft.dropdown.Option("50"),
+                ft.dropdown.Option("30"),
+                ft.dropdown.Option("20"),
+                ft.dropdown.Option("10"),
+                ],
+                width=300
+            )
+        dropdown_right_1kerpich = ft.Dropdown(
+            label="Товщина стін", 
+            options=[
+                ft.dropdown.Option("25"),
+                ft.dropdown.Option("38"),
+                ft.dropdown.Option("51"),
+                ft.dropdown.Option("64")
+                ],
+                width=300
+            )
+        dropdown_right_1beton = ft.Dropdown(
+            label="Товщина стін", 
+            options=[
+                ft.dropdown.Option("20"),
+                ft.dropdown.Option("30"),
+                ft.dropdown.Option("38"),
+                ft.dropdown.Option("40")
+                ],
+                width=300
+            )
+        dropdown_right_2 = ft.Dropdown(
+            label="площина вікон", 
+            options=[
+                ft.dropdown.Option("10"),
+                ft.dropdown.Option("20"),
+                ft.dropdown.Option("30"),
+                ft.dropdown.Option("40"),
+                ft.dropdown.Option("50")
+
+                ],
+                width=300
+            )
+        
+        
+        page.add(
+            ft.Container(
+                ft.Row([ft.IconButton(icon=ft.Icons.ARROW_BACK, tooltip="Назад", on_click=go_back_to_3)], alignment=ft.MainAxisAlignment.START),
+                padding=ft.Padding(10, 10, 0, 0),
+                expand=False,
+            ),
+            ft.Column(
+                [
+                    ft.Text("Висота будинків", size=30, weight="bold"),
+                    
+                    dropdown_left_Pr1,
+                    dropdown_left_Cuv1,
+
+                    ft.Text("Щільність забудови", size=30, weight="bold"),
+                    
+                    dropdown_left_Pr2,
+                    dropdown_left_Cuv2,
+
+                    ft.Text("Товщина стін", size=30, weight="bold"),
+                    ft.Text("Цегляна кладка", size=20, weight="bold"),
+                    dropdown_right_1kerpich,
+                    ft.Text("Легкий бетон", size=20, weight="bold"),
+                    dropdown_right_1beton,
+                    ft.Text("Площина вікон", size=30, weight="bold"),
+                    dropdown_right_2,
+
+                    ft.Container(
+                        ft.Row(
+                            [
+                                ft.ElevatedButton(
+                                    content=ft.Row(
+                                        [
+                                            ft.Text("Продовжити"),
+                                            ft.Icon(ft.Icons.KEYBOARD_ARROW_RIGHT),  # Іконка після тексту
+                                        ],
+                                        alignment=ft.MainAxisAlignment.CENTER,  # Вирівнювання по центру
+                                    ),
+                                    #TODO on_click=go_to_third_page,  # Функція переходу 
+                                    width=180,  # Ширина кнопки
+                                )
+                                
+                            ],
+                            alignment=ft.MainAxisAlignment.CENTER,
+                        ),
+                        padding=ft.Padding(0, 0, 0, 40),
+                    ),
+                ],
+                alignment=ft.MainAxisAlignment.CENTER,
+                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                spacing=30,
+                scroll=ft.ScrollMode.AUTO,  # Додає скролінг, якщо елементів занадто багато
+                expand=True,  # Забезпечує, що контейнер займає всю доступну площу
+            )
+        )
+        # page.update()
+        
+
 
     def third_page(e): # Третя сторінка зроблена по зразку першої
         page.controls.clear()
@@ -40,13 +172,18 @@ def main(page: ft.Page):
                 width=300
             )
         
-        page.update()
+        def go_to_fore_page(e):
+            # Переходимо на третю сторінку
+            page.controls.clear()
+            fourth_page(e)
+            page.update()
+
         page.add(
             ft.Container(
                 ft.Row(
                     [
                         ft.IconButton(
-                            icon=ft.icons.ARROW_BACK,
+                            icon=ft.Icons.ARROW_BACK,
                             tooltip="Назад",
                             on_click=go_back_to_2,
                         )
@@ -61,7 +198,7 @@ def main(page: ft.Page):
                     ft.Text("Визначення коефіцієнту умов розташування", size=30, weight="bold"),
                     # KВизначення зниження дози проникаючої радіації у забудові
                     dropdown_left_1,
-                    ft.Divider(),
+                    #ft.Divider(), #полоска
                     # Визначення послаблення радіації огороджувальними конструкціями будівель
                     dropdown_left_2,
                     ft.Row(
@@ -71,10 +208,11 @@ def main(page: ft.Page):
                                     [
                                         ft.Text("Продовжити"),
                                         ft.Icon(ft.Icons.KEYBOARD_ARROW_RIGHT),  # Іконка після тексту
+                                        
                                     ],
                                     alignment=ft.MainAxisAlignment.CENTER,  # Вирівнювання по центру
                                 ),
-                                #on_click=go_to_third_page,  # Функція переходу 
+                                on_click=go_to_fore_page,  # Функція переходу 
                                 width=180,  # Ширина кнопки
                             )
                             
@@ -87,7 +225,7 @@ def main(page: ft.Page):
                 spacing=30,
             )
         )
-
+        # page.update()
 
     # Функція для переходу на другу сторінку
     def second_page(e):
@@ -144,8 +282,8 @@ def main(page: ft.Page):
                             ft.DataCell(
                                 ft.Row(
                                     [
-                                        # ft.IconButton(ft.icons.EDIT, on_click=lambda e, row_id=row[0]: edit_row(row_id)),
-                                        ft.IconButton(ft.icons.DELETE, on_click=lambda e, row_id=row[0]: delete_row(row_id)),
+                                        # ft.IconButton(ft.Icons.EDIT, on_click=lambda e, row_id=row[0]: edit_row(row_id)),
+                                        ft.IconButton(ft.Icons.DELETE, on_click=lambda e, row_id=row[0]: delete_row(row_id)),
                                     ]
                                 )
                             ),
@@ -189,7 +327,7 @@ def main(page: ft.Page):
                 ft.Row(
                     [
                         ft.IconButton(
-                            icon=ft.icons.ARROW_BACK,
+                            icon=ft.Icons.ARROW_BACK,
                             tooltip="Назад",
                             on_click=go_back_to_1,
                         )
@@ -253,15 +391,23 @@ def main(page: ft.Page):
     # Функція для повернення на другу сторінку
     def go_back_to_2(e):
         page.controls.clear()
-        page.add(second_page(e))  # Виклик функції для повернення вмісту першої сторінки
+        #page.add(second_page(e))#error
+        second_page(e)  # Виклик функції для повернення вмісту першої сторінки
         page.update()
+
+    # Функція для повернення на другу сторінку
+    def go_back_to_3(e):
+        page.controls.clear()
+        #page.add(third_page(e))#error
+        third_page(e)  # Виклик функції для повернення вмісту першої сторінки
+        page.update()
+
 
     # Функція для оновлення тексту вибору
     def on_dropdown_change(e):
         nonlocal selected_option_1
         selected_option_1 = e.control.value
         result_text_1.value = f"Ви обрали: {selected_option_1}" if selected_option_1 else "Error"
-        RESULTS["option1"] = e.control.value
 
         # Отримання опису з бази даних
         if selected_option_1:
