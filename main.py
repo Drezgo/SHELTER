@@ -1109,8 +1109,8 @@ def main(page: ft.Page):
             border=ft.border.all(2, "black"),
             border_radius=20,
             columns=[
-                ft.DataColumn(ft.Text("Клас сховища, СПП із захисними властивостями сховищ"),  #, max_lines=2, overflow=ft.TextOverflow.CLIP
-                ft.DataColumn(ft.Text("Розміщення сховищ, СПП із захисними властивостями сховищ",
+                ft.DataColumn(ft.Text("Клас сховища, СПП із захисними властивостями сховищ")),  #, max_lines=2, overflow=ft.TextOverflow.CLIP
+                ft.DataColumn(ft.Text("Розміщення сховищ, СПП із захисними властивостями сховищ")),
                 ft.DataColumn(ft.Text("Надмірний тиск повітряної ударної хвилі кПа")),
                 ft.DataColumn(ft.Text("Ступінь послаблення радіаційного впливу (ступінь захисту) Аз")),
             ],
