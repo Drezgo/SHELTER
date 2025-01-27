@@ -1,247 +1,703 @@
+import os
+import sqlite3
 
 import flet as ft
-import sqlite3
+
+DB_PATH = os.path.join(os.path.dirname(__file__), "db", "MainBase.db")
+
+# LOGO_PATH = os.path.join(os.path.dirname(__file__), "FORTECK_LOGO.png")
+
+THEME = ft.ThemeMode.DARK
+
+DBN_URL="https://drive.google.com/file/d/1zMcW62G3RvexoyxLsiAHTCz2yYCVKe4h/view?usp=sharing"
+
+STEPS_SELECT_RESULTS = {}
+
+
+def store_coeficients_attenuation_coefficients():
+    connection = sqlite3.connect(DB_PATH)
+    cursor = connection.cursor()
+
+    # завантажуємо вибір користувача
+    cursor.execute("SELECT Material, Thickness FROM Uses_choice_G1")
+    user_data = cursor.fetchall()
+
+    coefficients = []
+    for row in user_data:
+        material, thickness = row
+
+        cursor.execute(
+            f"""
+            SELECT 
+            neutron_dose_coefficient as kn,
+            gamma_dose_coefficient as ky
+
+            FROM attenuation_coefficients
+            WHERE material_name = '{material}' AND material_thickness = '{thickness}'
+            """
+        )
+        data = cursor.fetchone()
+
+        coefficients.append(
+            {"material": material, "thickness": thickness, "kn": data[0], "ky": data[1]}
+        )
+
+    STEPS_SELECT_RESULTS["coefficients"] = coefficients
+    connection.close()
+
+
+def load_materials():
+    connection = sqlite3.connect(DB_PATH)
+    cursor = connection.cursor()
+    cursor.execute(
+        """
+        SELECT 
+        name
+        
+        FROM materials
+        ORDER BY name
+        """
+    )
+    data = cursor.fetchall()
+    connection.close()
+    return data
+
+
+def load_shelter_classes():
+    connection = sqlite3.connect(DB_PATH)
+    cursor = connection.cursor()
+    cursor.execute(
+        """
+        SELECT 
+        protection_class, 
+        description, 
+        overpressure_air_blast_wave,
+        radiation_protection_level
+        
+        FROM storage_classes
+        ORDER BY protection_class
+        """
+    )
+    data = cursor.fetchall()
+    connection.close()
+    return data
+
+
+def load_building_types():
+    connection = sqlite3.connect(DB_PATH)
+    cursor = connection.cursor()
+    cursor.execute(
+        """
+        SELECT 
+        name
+        
+        FROM building_types
+        ORDER BY name
+        """
+    )
+    data = cursor.fetchall()
+    connection.close()
+    return data
+
+
+def load_building_height_by_type(building_type: str):
+    connection = sqlite3.connect(DB_PATH)
+    cursor = connection.cursor()
+    cursor.execute(
+        f"""
+        SELECT 
+        distinct building_height 
+        
+        FROM location_condition_coefficients 
+        WHERE building_type_name = '{building_type}'
+        """
+    )
+    data = cursor.fetchall()
+    connection.close()
+    return data
+
+
+def load_building_density_by_type(building_type: str):
+    connection = sqlite3.connect(DB_PATH)
+    cursor = connection.cursor()
+    cursor.execute(
+        f"""
+        SELECT 
+        distinct building_density 
+        
+        FROM location_condition_coefficients 
+        WHERE building_type_name = '{building_type}'
+        """
+    )
+    data = cursor.fetchall()
+    connection.close()
+    return data
+
+
+def load_wall_thickness_by_material(material: str):
+    connection = sqlite3.connect(DB_PATH)
+    cursor = connection.cursor()
+    cursor.execute(
+        f"""
+        SELECT
+        distinct wall_thickness
+
+        FROM building_coefficients
+        WHERE wall_material_name = '{material}'
+        """
+    )
+    data = cursor.fetchall()
+    connection.close()
+    return data
+
+
+def load_wall_materials():
+    connection = sqlite3.connect(DB_PATH)
+    cursor = connection.cursor()
+    cursor.execute(
+        """
+        SELECT 
+        name
+        
+        FROM wall_materials
+        ORDER BY name
+        """
+    )
+    data = cursor.fetchall()
+    connection.close()
+    return data
+
+
+def get_shelter_class(protection_class: str):
+    connection = sqlite3.connect(DB_PATH)
+    cursor = connection.cursor()
+    cursor.execute(
+        f"""
+        SELECT 
+        protection_class, 
+        description, 
+        overpressure_air_blast_wave,
+        radiation_protection_level
+        
+        FROM storage_classes
+        WHERE protection_class = '{protection_class}'
+        """
+    )
+    result = cursor.fetchone()
+    connection.close()
+    return result
+
+
+def get_coefficient_zab(
+    building_type_name: str, building_height: str, building_density: int
+):
+    connection = sqlite3.connect(DB_PATH)
+    cursor = connection.cursor()
+    cursor.execute(
+        f"""
+        SELECT 
+        coefficient
+        
+        FROM location_condition_coefficients
+        WHERE building_type_name = '{building_type_name}' AND
+                building_height = '{building_height}' AND
+                building_density = {building_density}
+        """
+    )
+    result = cursor.fetchone()
+    connection.close()
+    return result
+
+
+def get_coefficient_bud(
+    wall_material_name: str,
+    building_type_name: str,
+    wall_thickness: int,
+    area_relation_percent: int,
+):
+    connection = sqlite3.connect(DB_PATH)
+    cursor = connection.cursor()
+    cursor.execute(
+        f"""
+        SELECT 
+        coefficient
+        
+        FROM building_coefficients
+        WHERE building_type_name = '{building_type_name}' AND
+                wall_material_name = '{wall_material_name}' AND
+                wall_thickness = {wall_thickness} AND
+                area_relation_percent = {area_relation_percent}
+        """
+    )
+    result = cursor.fetchone()
+    connection.close()
+    return result
+
 
 def main(page: ft.Page):
     selected_option_1 = ""  # Змінна для зберігання вибраного варіанту
-    result_text_1 = ft.Text("", size=16, weight="bold", color=ft.Colors.GREEN)  # Динамічний текст для відображення вибору (ви обрали А-ІІ)
-    description_text_1 = ft.Text("", size=14, italic=True, color=ft.Colors.GREEN, width=500)   # Текст для опису з бази даних (пояснення шо таке А-ІІ) 
-    txt_number_2 = ft.TextField(value="10", text_align=ft.TextAlign.RIGHT, width=100) # Поле для введення числа
-
-
-    # print(type(selected_option_1))
-    # print(type(description_text))
+    material_dropdown = ""  # Змінна для зберігання вибраного варіанту
+    result_text_1 = ft.Text(
+        "", size=16, weight="bold", color=ft.Colors.GREEN
+    )  # Динамічний текст для відображення вибору (ви обрали А-ІІ)
+    description_text_1 = ft.Text(
+        "", size=14, italic=True, color=ft.Colors.GREEN, width=500
+    )  # Текст для опису з бази даних (пояснення шо таке А-ІІ)
+    txt_number_2 = ft.TextField(
+        value="10", 
+        text_align=ft.TextAlign.RIGHT, 
+        width=100, 
+        # keyboard_type=ft.KeyboardType.NUMBER,  # Включає числову клавіатуру
+        # on_change=lambda e: validate_input(e),  # Перевірка на зміну тексту
+        on_blur=lambda e: validate_input(e),  # Перевірка при втраті фокусу
+    )  # Поле для введення числа
 
     # Налаштування сторінки
-    page.window.width = 900
-    page.window.height = 600
-    page.title = "Розрахунок захисту укриттів від радіації"
+    page.window.width = 900    #для desktop-вікна
+    page.window.height = 600    #для desktop-вікна
+    page.title = "Forteck" #Розрахунок захисту укриттів від радіації
     page.vertical_alignment = ft.MainAxisAlignment.CENTER
     page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
+    page.theme_mode = THEME
     # page.window.icon = "Radiation.png"
 
-    def fourth_page(e): # 4 сторінка 
+    def fifth_page():
         page.controls.clear()
-        #продублювати. для промислової і житлової. іф попередня змінна = промислова, то виводять бетони одні.елсе...
-        dropdown_left_Pr1 = ft.Dropdown( #промислові
-            label="Висота будинків",  
-            options=[
-                ft.dropdown.Option(">=12"),
-                ft.dropdown.Option("8-12"),
-                ],
-                width=300
-            )
-        dropdown_left_Pr2 = ft.Dropdown( #промислові
-            label="Щільність забудови", 
-            options=[
-                ft.dropdown.Option("40"),
-                ft.dropdown.Option("30"),
-                ft.dropdown.Option("20"),
-                ft.dropdown.Option("10"),
-                ],
-                width=300
-            )
-        dropdown_left_Cuv1 = ft.Dropdown( #житлові
-            label="Висота будинків",  
-            options=[
-                ft.dropdown.Option(">=30"),
-                ft.dropdown.Option("10-30"),
-                ft.dropdown.Option("8-10")
-                ],
-                width=300
-            )
-        dropdown_left_Cuv2 = ft.Dropdown( #житлові
-            label="Щільність забудови", 
-            options=[
-                ft.dropdown.Option("50"),
-                ft.dropdown.Option("30"),
-                ft.dropdown.Option("20"),
-                ft.dropdown.Option("10"),
-                ],
-                width=300
-            )
-        dropdown_right_1kerpich = ft.Dropdown(
-            label="Товщина стін", 
-            options=[
-                ft.dropdown.Option("25"),
-                ft.dropdown.Option("38"),
-                ft.dropdown.Option("51"),
-                ft.dropdown.Option("64")
-                ],
-                width=300
-            )
-        dropdown_right_1beton = ft.Dropdown(
-            label="Товщина стін", 
-            options=[
-                ft.dropdown.Option("20"),
-                ft.dropdown.Option("30"),
-                ft.dropdown.Option("38"),
-                ft.dropdown.Option("40")
-                ],
-                width=300
-            )
-        dropdown_right_2 = ft.Dropdown(
-            label="площина вікон", 
-            options=[
-                ft.dropdown.Option("10"),
-                ft.dropdown.Option("20"),
-                ft.dropdown.Option("30"),
-                ft.dropdown.Option("40"),
-                ft.dropdown.Option("50")
+        print(STEPS_SELECT_RESULTS)
+        #обрахунок 
+        Az = STEPS_SELECT_RESULTS["Az"]
+        Kzab = STEPS_SELECT_RESULTS["coefficient_zab"]
+        Kbud = STEPS_SELECT_RESULTS["coefficient_bud"]
 
-                ],
-                width=300
-            )
-        
-        
+        Ky = 1
+        for coeff in STEPS_SELECT_RESULTS["coefficients"]:
+            Ky = Ky * coeff["ky"]
+
+        Kn = 1
+        for coeff in STEPS_SELECT_RESULTS["coefficients"]:
+            Kn = Kn * coeff["kn"]
+
+        KN = 1.0
+
+        Azf = 1.18 * (Ky * Kn) * (Kzab / Kbud) * KN / (Ky + Kn)
+
+        # Формуємо дані для таблиці
+        formula_elements = [
+            "Aз", "≤", "Aзф", "=", "1.18", "*", "Ky", "*", "Kn", "*", "(", "Kзаб", "/", "Kбуд", ")", "*", "KN", "/", "(", "Ky", "+", "Kn", ")"
+        ]
+        substituted_values = [
+            f"{Az}", "≤", f"{round(Azf, 3)}", "=", "1.18", "*", f"{round(Ky, 3)}", "*", f"{round(Kn, 3)}", "*", "(", f"{Kzab}", "/", f"{Kbud}", ")", "*", f"{KN}", "/", "(", f"{round(Ky, 3)}", "+", f"{round(Kn, 3)}", ")"
+        ]
+
+        # Таблиця
+        table = ft.DataTable(
+            columns=[ft.DataColumn(ft.Text(element, weight="bold")) for element in formula_elements],  # Елементи формули як заголовки колонок
+            rows=[
+                ft.DataRow(
+                    cells=[ft.DataCell(ft.Text(value, size=12, text_align=ft.TextAlign.CENTER)) for value in substituted_values],  # Підставлені значення
+                )
+            ],
+            column_spacing=15,  # Зменшення відстані між колонками
+        )
+
+        result_text = ft.Text(
+            spans=[
+                ft.TextSpan("Результат: \n", style=ft.TextStyle(size=20, weight=ft.FontWeight.BOLD)),
+                ft.TextSpan(f"Очікуваний ступінь захисту (Aз) = {Az}\nРозрахований ступінь захисту (Aзф) = {round(Azf, 3)}\n"),
+                # ft.TextSpan("Аз ≤ Азф: "),
+                ft.TextSpan(
+                    "\nCтупеню послаблення радіаційного впливу досягнуто." if Az <= Azf else "Cтупеню послаблення радіаційного впливу не досягнуто.",
+                    style=ft.TextStyle(size=20,weight=ft.FontWeight.BOLD, color=ft.Colors.GREEN_400 if Az <= Azf else ft.Colors.RED_400),  # Зелений для True, червоний для False
+                ),
+            ],
+            size=16,
+        )
+
+        # Посилання на GIF, залежно від результату
+        gif_link = ft.Text(
+            spans=[
+                ft.TextSpan("Детальніше дивіться тут: "),
+                ft.TextSpan(
+                    "натисніть для перегляду GIF :)",
+                    on_click=lambda e: page.launch_url(
+                        "https://tenor.com/uk/view/social-credit-xin-po-pich-gif-25235227"
+                        if Az <= Azf
+                        else "https://tenor.com/uk/view/social-credit-system-china-social-credit-negative-social-credit-social-credit-meme-social-credit-score-gif-25001796"
+                    ),
+                ),
+            ],
+        )
+
         page.add(
-            ft.Container(
-                ft.Row([ft.IconButton(icon=ft.Icons.ARROW_BACK, tooltip="Назад", on_click=go_back_to_3)], alignment=ft.MainAxisAlignment.START),
-                padding=ft.Padding(10, 10, 0, 0),
-                expand=False,
-            ),
-            ft.Column(
+            ft.Row(
                 [
-                    ft.Text("Висота будинків", size=30, weight="bold"),
-                    
-                    dropdown_left_Pr1,
-                    dropdown_left_Cuv1,
+                    rail(page),
+                    ft.VerticalDivider(width=1),
+                    ft.Column(  # column для Column з текстом
+                        [
+                            ft.Container(  # Container для першого Row
+                                ft.Row(
+                                    [
+                                        ft.IconButton(
+                                            icon=ft.Icons.ARROW_BACK,
+                                            tooltip="Назад",
+                                            on_click=go_back_to_4,
+                                        )
+                                    ],
+                                    alignment=ft.MainAxisAlignment.START,
+                                ),
+                                padding=ft.Padding(10, 10, 0, 0),
+                                expand=False,
+                            ),
+                            table,
+                            # Результат порівняння
+                            result_text,
+                            gif_link,
+                        ],
+                        alignment=ft.MainAxisAlignment.CENTER,
+                        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                        expand=True,
+                        spacing=30,
+                        scroll=ft.ScrollMode.AUTO,
+                    ),
+                ],
+                expand=True
+            )
+        )
 
-                    ft.Text("Щільність забудови", size=30, weight="bold"),
-                    
-                    dropdown_left_Pr2,
-                    dropdown_left_Cuv2,
+    def fourth_page(e):  # 4 сторінка
+        page.controls.clear()
 
-                    ft.Text("Товщина стін", size=30, weight="bold"),
-                    ft.Text("Цегляна кладка", size=20, weight="bold"),
-                    dropdown_right_1kerpich,
-                    ft.Text("Легкий бетон", size=20, weight="bold"),
-                    dropdown_right_1beton,
-                    ft.Text("Площина вікон", size=30, weight="bold"),
-                    dropdown_right_2,
+        # Отримуємо збережені значення з сесії
+        zabudova = page.session.get("zabudova")  
+        material = page.session.get("material")
 
+        # завантажуємо можливі варіанти висоти будинків для промислових
+        building_heights = load_building_height_by_type(zabudova)
+
+        # створюємо drop down
+        options = []
+        for height in building_heights:
+            options.append(ft.dropdown.Option(key=height[0]))
+
+        # продублювати. для промислової і житлової. іф попередня змінна = промислова, то виводять бетони одні.елсе...
+        dropdown_left_Pr1 = ft.Dropdown(  # промислові
+            label="Висота будинків",
+            options=options,
+            width=300,
+            
+        )
+
+        # завантажуємо можливі варіанти Щільність забудови для промислових
+        building_densities = load_building_density_by_type(zabudova)
+
+        # створюємо drop down
+        options = []
+        for density in building_densities:
+            options.append(ft.dropdown.Option(key=density[0]))
+
+        dropdown_left_Pr2 = ft.Dropdown(
+            label="Щільність забудови",
+            options=options,
+            width=300,
+        )
+
+        # завантажуємо можливі варіанти Товщина стін
+        wall_thickness = load_wall_thickness_by_material(material)
+
+        # створюємо drop down
+        options = []
+        for thickness in wall_thickness:
+            options.append(ft.dropdown.Option(key=thickness[0]))
+
+        dropdown_right_1kerpich = ft.Dropdown(
+            label="Товщина стін",
+            options=options,
+            width=300,
+        )
+
+        dropdown_right_2 = ft.Dropdown(
+            label="площина вікон",
+            options=[
+                ft.dropdown.Option("10"),
+                ft.dropdown.Option("20"),
+                ft.dropdown.Option("30"),
+                ft.dropdown.Option("40"),
+                ft.dropdown.Option("50"),
+            ],
+            width=300,
+        )
+
+        text_block = ft.Text(
+            spans=[
+                ft.TextSpan(
+                    "Ви обрали:\n",  # Заголовок
+                    style=ft.TextStyle(size=16, weight=ft.FontWeight.BOLD),
+                ),
+                ft.TextSpan("Клас сховища:   "),
+                ft.TextSpan(
+                    selected_option_1,  # Виділення змінної жирним
+                    style=ft.TextStyle(weight=ft.FontWeight.BOLD, color=ft.Colors.GREEN_400),
+                ),
+                ft.TextSpan("\nХарактер забудови:   "),
+                ft.TextSpan(
+                    zabudova,  # Виділення змінної жирним
+                    style=ft.TextStyle(weight=ft.FontWeight.BOLD, color=ft.Colors.GREEN_400),
+                ),
+                ft.TextSpan("\nМатеріал стін:   "),
+                ft.TextSpan(
+                    material,  # Виділення змінної жирним
+                    style=ft.TextStyle(weight=ft.FontWeight.BOLD, color=ft.Colors.GREEN_400),
+                ),
+            ],
+        )
+
+        def go_to_fifth_page(e):
+            # Зберігаємо вибрані значення в сесії
+            page.session.set("building_height", dropdown_left_Pr1.value)
+            page.session.set("building_density", dropdown_left_Pr2.value)
+            page.session.set("wall_thickness", dropdown_right_1kerpich.value)
+            page.session.set("area_relation_percent", dropdown_right_2.value)
+
+            coefficient_zab = get_coefficient_zab(
+                building_type_name=page.session.get("zabudova"),
+                building_height=page.session.get("building_height"),
+                building_density=page.session.get("building_density"),
+            )
+            STEPS_SELECT_RESULTS["coefficient_zab"] = coefficient_zab[0]
+
+            coefficient_bud = get_coefficient_bud(
+                wall_material_name=page.session.get("material"),
+                building_type_name=page.session.get("zabudova"),
+                wall_thickness=page.session.get("wall_thickness"),
+                area_relation_percent=page.session.get("area_relation_percent"),
+            )
+            STEPS_SELECT_RESULTS["coefficient_bud"] = coefficient_bud[0]
+
+            print(STEPS_SELECT_RESULTS)
+            # Переходимо на третю сторінку
+            page.controls.clear()
+            fifth_page()
+            page.update()
+
+        page.add(
+            ft.Row([
+                rail(page),
+                ft.VerticalDivider(width=1),
+                ft.Column([
                     ft.Container(
                         ft.Row(
                             [
-                                ft.ElevatedButton(
-                                    content=ft.Row(
-                                        [
-                                            ft.Text("Продовжити"),
-                                            ft.Icon(ft.Icons.KEYBOARD_ARROW_RIGHT),  # Іконка після тексту
-                                        ],
-                                        alignment=ft.MainAxisAlignment.CENTER,  # Вирівнювання по центру
-                                    ),
-                                    #TODO on_click=go_to_third_page,  # Функція переходу 
-                                    width=180,  # Ширина кнопки
+                                ft.IconButton(
+                                    icon=ft.Icons.ARROW_BACK,
+                                    tooltip="Назад",
+                                    on_click=go_back_to_3,
                                 )
-                                
                             ],
-                            alignment=ft.MainAxisAlignment.CENTER,
+                            alignment=ft.MainAxisAlignment.START,
                         ),
-                        padding=ft.Padding(0, 0, 0, 40),
+                        padding=ft.Padding(10, 10, 0, 0),
+                        expand=False,
                     ),
-                ],
+                    ft.Container(
+                        text_block,
+                        alignment=ft.alignment.center_left,  # Вирівнювання text_block зліва
+                        padding=ft.Padding(10, 0, 0, 0),
+                        expand=False,
+                    ),
+                    ft.Row(
+                        [   
+                        ft.Column([
+                            ft.Text("Висота будинків забудови (м)", size=30, weight="bold"),
+                            dropdown_left_Pr1,
+                            ft.Text("Щільність забудови (%)", size=30, weight="bold"),
+                            dropdown_left_Pr2,
+                        ], 
+                        # alignment=ft.MainAxisAlignment.CENTER,
+                        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                        expand=True,
+                        spacing=30,
+                        ),
+                        ft.Column([
+                            ft.Text("Товщина стін огорожі (см)", size=30, weight="bold"),
+                            dropdown_right_1kerpich,
+                            ft.Text("Відносна площа отворів огорожі (%)", size=30, weight="bold"),
+                            dropdown_right_2,
+                            ft.Container(
+                                ft.Row(
+                                    [
+                                        ft.ElevatedButton(
+                                            content=ft.Row(
+                                                [
+                                                    ft.Text("Продовжити", weight=ft.FontWeight.BOLD),
+                                                    ft.Icon(
+                                                        ft.Icons.KEYBOARD_ARROW_RIGHT
+                                                    ),  # Іконка після тексту
+                                                ],
+                                                alignment=ft.MainAxisAlignment.CENTER,  # Вирівнювання по центру
+                                            ),
+                                            on_click=go_to_fifth_page,  # Функція переходу на другу сторінку
+                                            width=160,  # Ширина кнопки
+                                            bgcolor=ft.Colors.GREEN_200,
+                                            color=ft.Colors.GREEN_900,
+                                        ),
+                                    ],
+                                    alignment=ft.MainAxisAlignment.CENTER,
+                                ),
+                                # padding=ft.Padding(0, 30, 0, 0),
+                            ),
+                        ],
+                        expand=True, 
+                        # alignment=ft.MainAxisAlignment.CENTER, 
+                        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                        spacing=30,
+                        ),
+                    ],
+                    alignment=ft.MainAxisAlignment.CENTER,
+                    # horizontal_alignment=ft.CrossAxisAlignment.CENTER,    
+                    expand=True,  # Забезпечує, що контейнер займає всю доступну площу
+                    ),
+                ],  
                 alignment=ft.MainAxisAlignment.CENTER,
                 horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                expand=True,
                 spacing=30,
-                scroll=ft.ScrollMode.AUTO,  # Додає скролінг, якщо елементів занадто багато
-                expand=True,  # Забезпечує, що контейнер займає всю доступну площу
-            )
+                ),
+            ],
+            expand=True,)
         )
         # page.update()
-        
 
-
-    def third_page(e): # Третя сторінка зроблена по зразку першої
+    def third_page(e):  # Третя сторінка зроблена по зразку першої
         page.controls.clear()
 
+        # завантажуємо Характер забудови
+        building_types = load_building_types()
+
+        # створюємо drop down
+        options = []
+        for building_type in building_types:
+            name = building_type[0]
+            options.append(ft.dropdown.Option(key=name))
+
         dropdown_left_1 = ft.Dropdown(
-            label="Характер забудови",  
-            options=[
-                ft.dropdown.Option("Промислова"),
-                ft.dropdown.Option("Житлова та громадська"),
-                ],
-                width=300
-            )
+            label="Характер забудови",
+            options=options,
+            width=300,
+            value=page.session.get(
+                "zabudova"
+            ),  # Завантаження збереженого 
+        )
+
+        # завантажуємо Характер забудови
+        wall_materials = load_wall_materials()
+
+        # створюємо drop down
+        options = []
+        for wall_material in wall_materials:
+            name = wall_material[0]
+            options.append(ft.dropdown.Option(key=name))
+
         dropdown_left_2 = ft.Dropdown(
-            label="Матеріал стін огороджувальної конструкції", 
-            options=[
-                ft.dropdown.Option("Цегляна кладка "),
-                ft.dropdown.Option("Легкий бетон"),
-                ],
-                width=300
+            label="Матеріал стін огороджувальної конструкції",
+            options=options,
+            width=300,
+            value=page.session.get(
+                "material"
+            ),  # Завантаження збереженого значення
+        )
+
+        def go_to_fourth_page(e):
+            # Зберігаємо вибрані значення в сесії
+            page.session.set(
+                "zabudova", dropdown_left_1.value
+            )  
+            page.session.set(
+                "material", dropdown_left_2.value
             )
-        
-        def go_to_fore_page(e):
+
             # Переходимо на третю сторінку
             page.controls.clear()
             fourth_page(e)
             page.update()
 
         page.add(
-            ft.Container(
-                ft.Row(
-                    [
-                        ft.IconButton(
-                            icon=ft.Icons.ARROW_BACK,
-                            tooltip="Назад",
-                            on_click=go_back_to_2,
-                        )
-                    ],
-                    alignment=ft.MainAxisAlignment.START
-                ),
-                padding=ft.Padding(10, 10, 0, 0),
-                expand=False,
-            ),
-            ft.Column(
-                [
-                    ft.Text("Визначення коефіцієнту умов розташування", size=30, weight="bold"),
-                    # KВизначення зниження дози проникаючої радіації у забудові
-                    dropdown_left_1,
-                    #ft.Divider(), #полоска
-                    # Визначення послаблення радіації огороджувальними конструкціями будівель
-                    dropdown_left_2,
-                    ft.Row(
-                        [
-                            ft.ElevatedButton(
-                                content=ft.Row(
-                                    [
-                                        ft.Text("Продовжити"),
-                                        ft.Icon(ft.Icons.KEYBOARD_ARROW_RIGHT),  # Іконка після тексту
-                                        
-                                    ],
-                                    alignment=ft.MainAxisAlignment.CENTER,  # Вирівнювання по центру
+            ft.Row([
+                rail(page),
+                ft.VerticalDivider(width=1),
+                ft.Column(
+                        [ft.Container(
+                            ft.Row(
+                                [
+                                    ft.IconButton(
+                                        icon=ft.Icons.ARROW_BACK,
+                                        tooltip="Назад",
+                                        on_click=go_back_to_2,
+                                    )
+                                ],
+                                alignment=ft.MainAxisAlignment.START,
+                            ),
+                            padding=ft.Padding(10, 10, 0, 0),
+                            expand=False,
+                        ),
+                        ft.Text(
+                            "Визначення коефіцієнту умов розташування",
+                            size=30,
+                            weight="bold",
+                        ),
+                        # KВизначення зниження дози проникаючої радіації у забудові
+                        dropdown_left_1,
+                        # ft.Divider(), #полоска
+                        # Визначення послаблення радіації огороджувальними конструкціями будівель
+                        dropdown_left_2,
+                        ft.Row(
+                            [
+                                ft.ElevatedButton(
+                                    content=ft.Row(
+                                        [
+                                            ft.Text("Продовжити", weight=ft.FontWeight.BOLD),
+                                            ft.Icon(
+                                                ft.Icons.KEYBOARD_ARROW_RIGHT
+                                            ),  # Іконка після тексту
+                                        ],
+                                        alignment=ft.MainAxisAlignment.CENTER,  # Вирівнювання по центру
+                                    ),
+                                    on_click=go_to_fourth_page,  # Функція переходу на другу сторінку
+                                    width=160,  # Ширина кнопки
+                                    bgcolor=ft.Colors.GREEN_200,
+                                    color=ft.Colors.GREEN_900,
                                 ),
-                                on_click=go_to_fore_page,  # Функція переходу 
-                                width=180,  # Ширина кнопки
-                            )
-                            
-                        ],
-                        alignment=ft.MainAxisAlignment.CENTER,
-                    )
-                ],
-                alignment=ft.MainAxisAlignment.CENTER,
-                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-                spacing=30,
-            )
+                            ],
+                            alignment=ft.MainAxisAlignment.CENTER,
+                        ),
+                    ],
+                    alignment=ft.MainAxisAlignment.CENTER,
+                    horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                    spacing=30,
+                    expand=True,    
+                )
+            ],expand=True)
         )
-        # page.update()
+        page.update() 
 
     # Функція для переходу на другу сторінку
     def second_page(e):
         page.controls.clear()
 
-        material_dropdown = ft.Dropdown(
+        # завантажуємо матеріали з бази даних
+        materials = load_materials()
+
+        # створюємо drop down
+        options = []
+        for material in materials:
+            name = material[0]
+            options.append(ft.dropdown.Option(key=name))
+
+        material_dropdown= ft.Dropdown(
             label="Вибір матеріалу",
-            options=[
-                ft.dropdown.Option("Бетон"),
-                ft.dropdown.Option("Цегла"),
-                ft.dropdown.Option("Грунт"),
-                ft.dropdown.Option("Дерево"),
-                ft.dropdown.Option("Поліетилен"),
-                ft.dropdown.Option("Сталь"),
-            ],
+            options=options,
             width=300,
+            on_change=material_dropdown_change,
         )
 
         row = ft.Row(
@@ -257,7 +713,7 @@ def main(page: ft.Page):
             columns=[
                 ft.DataColumn(ft.Text("ID")),
                 ft.DataColumn(ft.Text("Матеріал")),
-                ft.DataColumn(ft.Text("Товщина")),
+                ft.DataColumn(ft.Text("Товщина (см)")),
                 ft.DataColumn(ft.Text("Дії")),
             ],
             rows=[],
@@ -265,7 +721,7 @@ def main(page: ft.Page):
 
         def load_data():
             # Завантажуємо дані з бази
-            connection = sqlite3.connect("db\MainBase.db")
+            connection = sqlite3.connect(DB_PATH)
             cursor = connection.cursor()
             cursor.execute("SELECT rowid, Material, Thickness FROM Uses_choice_G1")
             data = cursor.fetchall()
@@ -283,7 +739,12 @@ def main(page: ft.Page):
                                 ft.Row(
                                     [
                                         # ft.IconButton(ft.Icons.EDIT, on_click=lambda e, row_id=row[0]: edit_row(row_id)),
-                                        ft.IconButton(ft.Icons.DELETE, on_click=lambda e, row_id=row[0]: delete_row(row_id)),
+                                        ft.IconButton(
+                                            ft.Icons.DELETE,
+                                            on_click=lambda e, row_id=row[
+                                                0
+                                            ]: delete_row(row_id),
+                                        ),
                                     ]
                                 )
                             ),
@@ -294,18 +755,21 @@ def main(page: ft.Page):
 
         def add_to_db(e):
             # Додаємо дані до бази
-            connection = sqlite3.connect("db\MainBase.db")
+            connection = sqlite3.connect(DB_PATH)
             cursor = connection.cursor()
             material = material_dropdown.value
             thickness = txt_number_2.value
-            cursor.execute("INSERT INTO Uses_choice_G1 (Material, Thickness) VALUES (?, ?)", (material, thickness))
+            cursor.execute(
+                "INSERT INTO Uses_choice_G1 (Material, Thickness) VALUES (?, ?)",
+                (material, thickness),
+            )
             connection.commit()
             connection.close()
             load_data()
 
         def delete_row(row_id):
             # Видаляємо запис
-            connection = sqlite3.connect("db\MainBase.db")
+            connection = sqlite3.connect(DB_PATH)
             cursor = connection.cursor()
             cursor.execute("DELETE FROM Uses_choice_G1 WHERE rowid = ?", (row_id,))
             connection.commit()
@@ -319,69 +783,152 @@ def main(page: ft.Page):
         def go_to_third_page(e):
             # Переходимо на третю сторінку
             page.controls.clear()
+
+            store_coeficients_attenuation_coefficients()
+
             third_page(e)
             page.update()
 
         page.add(
-            ft.Container(
+            ft.Row([
+                rail(page),
+                ft.VerticalDivider(width=1),
                 ft.Row(
-                    [
-                        ft.IconButton(
-                            icon=ft.Icons.ARROW_BACK,
-                            tooltip="Назад",
-                            on_click=go_back_to_1,
-                        )
-                    ],
-                    alignment=ft.MainAxisAlignment.START
-                ),
-                padding=ft.Padding(10, 10, 0, 0),
-                expand=False,
-            ),
-            ft.Column(
-                [
-                    ft.Text(f"Ви обрали клас сховища: {selected_option_1}", size=20, weight="bold"),
-                    material_dropdown,
-                    ft.Text("Вибір товщини шару матеріалу (кратний 5)", size=16, weight="bold"),
-                    row,
-                    ft.Row(
-                        [
-                            ft.ElevatedButton("Додати", on_click=add_to_db, width=150),
-                            ft.ElevatedButton(
-                                content=ft.Row(
-                                    [
-                                        ft.Text("Продовжити"),
-                                        ft.Icon(ft.Icons.KEYBOARD_ARROW_RIGHT),  # Іконка після тексту
-                                    ],
-                                    alignment=ft.MainAxisAlignment.CENTER,  # Вирівнювання по центру
+                    [   
+                        ft.Column(
+                            [
+                                ft.Container(
+                                    ft.Row(
+                                        [
+                                            ft.IconButton(
+                                                icon=ft.Icons.ARROW_BACK,
+                                                tooltip="Назад",
+                                                on_click=go_back_to_1,
+                                            )
+                                        ],
+                                        alignment=ft.MainAxisAlignment.START,
+                                    ),
+                                    padding=ft.Padding(10, 10, 0, 0),
+                                    expand=False,
                                 ),
-                                on_click=go_to_third_page,  # Функція переходу на третю сторінку
-                                width=180,  # Ширина кнопки
-                            )
-
-                        ],
-                        alignment=ft.MainAxisAlignment.CENTER,
-                    ),
-                    ft.Divider(),
-                    ft.Text("Таблиця введених даних:", size=18, weight="bold"),
-                    table,
-                ],
-                alignment=ft.MainAxisAlignment.CENTER,
-                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-                spacing=30,
-                scroll=ft.ScrollMode.AUTO,  # Додає скролінг, якщо елементів занадто багато
-                expand=True,  # Забезпечує, що контейнер займає всю доступну площу
-            ),
+                                ft.Text(
+                                    spans=[
+                                        ft.TextSpan(
+                                            "Ви обрали ",  # Заголовок
+                                            style=ft.TextStyle(size=16, weight=ft.FontWeight.BOLD),
+                                        ),
+                                        ft.TextSpan("клас сховища:   "),
+                                        ft.TextSpan(
+                                            selected_option_1,  # Виділення змінної жирним
+                                            style=ft.TextStyle(weight=ft.FontWeight.BOLD, color=ft.Colors.GREEN_400),
+                                        ),
+                                    ],
+                                ),
+                                ft.Text(
+                                    "1. Виберіть матеріал стіни (стін можна створити декілька)",
+                                    size=16,
+                                    weight="bold",
+                                ),
+                                material_dropdown,
+                                ft.Text(
+                                    "2. Вкажіть товщину шару матеріалу стіни (см)",
+                                    size=16,
+                                    weight="bold",
+                                ),
+                                row,
+                                ft.Text(
+                                    "Товщина має бути від 10 до 150 см та кратною 5 см ",
+                                    size=10,
+                                    weight="bold",
+                                    color=ft.Colors.RED,
+                                ),
+                                ft.Row(
+                                    [
+                                        ft.OutlinedButton("Додати", on_click=add_to_db, width=150, style=ft.ButtonStyle(side=ft.BorderSide(2, ft.Colors.BLUE))),
+                                        ft.ElevatedButton(
+                                            content=ft.Row(
+                                                [
+                                                    ft.Text("Продовжити", weight=ft.FontWeight.BOLD),
+                                                    ft.Icon(
+                                                        ft.Icons.KEYBOARD_ARROW_RIGHT
+                                                    ),  # Іконка після тексту
+                                                ],
+                                                alignment=ft.MainAxisAlignment.CENTER,  # Вирівнювання по центру
+                                            ),
+                                            on_click=go_to_third_page,  # Функція переходу на другу сторінку
+                                            width=150,  # Ширина кнопки
+                                            bgcolor=ft.Colors.GREEN_200,
+                                            color=ft.Colors.GREEN_900,
+                                        ),
+                                    ],
+                                    alignment=ft.MainAxisAlignment.CENTER,
+                                ),
+                                ft.VerticalDivider()
+                            ],
+                            alignment=ft.MainAxisAlignment.CENTER,
+                            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                            expand=True,
+                            spacing=20,
+                        ),
+                        ft.Column(
+                            [
+                                ft.Text("Таблиця введених даних:", size=18, weight="bold"),
+                                table
+                            ],
+                            alignment=ft.MainAxisAlignment.CENTER,
+                            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                            spacing=20,
+                            scroll=ft.ScrollMode.AUTO,  # Додає скролінг, якщо елементів занадто багато
+                            expand=True,  # Забезпечує, що контейнер займає всю доступну площу
+                        ),
+                    ],
+                    alignment=ft.MainAxisAlignment.CENTER,
+                    expand=True,
+                ),
+            ],expand=True)
         )
         load_data()
 
     def minus_click(e):
-        txt_number_2.value = str(int(txt_number_2.value) - 5)
+        value = int(txt_number_2.value)
+        if value > 10:  # Мінімальне значення
+            txt_number_2.value = str(value - 5)
         page.update()
 
     def plus_click(e):
-        txt_number_2.value = str(int(txt_number_2.value) + 5)
+        value = int(txt_number_2.value)
+        if material_dropdown == "Сталь" and value >= 50 :
+            txt_number_2.value = "50"  # обмеження для сталі
+        else:
+            if value < 150 :  # Максимальне значення
+                txt_number_2.value = str(value + 5)
         page.update()
-    
+
+    # Функція для валідації введення товщини шару матеріалу
+    def validate_input(e):
+        try:
+            # Перевіряємо, чи введено число в межах діапазону
+            value = int(txt_number_2.value)
+            if value < 10 or value == "" or value % 5 != 0:
+                txt_number_2.value = "10"  # Встановлюємо мінімальне значення
+            elif value > 150 or value == "" or value % 5 != 0:
+                txt_number_2.value = "150"  # Встановлюємо максимальне значення
+            elif material_dropdown == "Сталь" and value > 50:
+                txt_number_2.value = "50"
+        except ValueError:
+            # Якщо введення не є числом, повертаємо мінімальне значення
+            txt_number_2.value = "10"
+        page.update()
+
+    # Функція для повернення на першу сторінку
+    def go_back_to_home(e):
+        page.controls.clear()
+        page.add(first_page())  # Виклик функції для повернення вмісту першої сторінки
+        page.update()
+        delete_table_G1()
+        STEPS_SELECT_RESULTS = {}#!!!!!!!!!!!!!! !!!!!!!!!!!!!!! !!!!!!! має стерти всі дані, але не стирає всі! доробити
+        # анулювання змінних для зберігання даних з STEPS_SELECT_RESULTS та інші змініні:
+
     # Функція для повернення на першу сторінку
     def go_back_to_1(e):
         page.controls.clear()
@@ -391,35 +938,51 @@ def main(page: ft.Page):
     # Функція для повернення на другу сторінку
     def go_back_to_2(e):
         page.controls.clear()
-        #page.add(second_page(e))#error
-        second_page(e)  # Виклик функції для повернення вмісту першої сторінки
+        # page.add(second_page(e))#error
+        second_page(e)  
         page.update()
 
-    # Функція для повернення на другу сторінку
+    # Функція для повернення на третю сторінку
     def go_back_to_3(e):
         page.controls.clear()
-        #page.add(third_page(e))#error
-        third_page(e)  # Виклик функції для повернення вмісту першої сторінки
+        # page.add(third_page(e))#error
+        third_page(e)  
         page.update()
 
+    # Функція для повернення на четверту сторінку
+    def go_back_to_4(e):
+        page.controls.clear()
+        fourth_page(e)  
+        page.update()
 
+    # Функція для оновлення тексту вибору
+    def material_dropdown_change(e):
+        nonlocal material_dropdown
+        material_dropdown = e.control.value
     # Функція для оновлення тексту вибору
     def on_dropdown_change(e):
         nonlocal selected_option_1
         selected_option_1 = e.control.value
-        result_text_1.value = f"Ви обрали: {selected_option_1}" if selected_option_1 else "Error"
+        result_text_1.value = (
+            f"Ви обрали: {selected_option_1}" if selected_option_1 else "Error"
+        )
 
         # Отримання опису з бази даних
         if selected_option_1:
-            connection = sqlite3.connect("db\MainBase.db")
-            cursor = connection.cursor()
-            cursor.execute("SELECT description FROM a1 WHERE class = ?", (selected_option_1,))
-            result = cursor.fetchone()
-            connection.close()
+            result = get_shelter_class(selected_option_1)
+            (
+                protection_class,
+                description,
+                overpressure_air_blast_wave,
+                radiation_protection_level,
+            ) = result
+
+            # збережемо значення ступінь захисту
+            STEPS_SELECT_RESULTS["Az"] = radiation_protection_level
 
             # Оновлення тексту опису
             if result:
-                description_text_1.value = result[0]
+                description_text_1.value = description
             else:
                 description_text_1.value = "Опис для цього класу відсутній."
         else:
@@ -430,7 +993,7 @@ def main(page: ft.Page):
     # Видалення таблиці вибору шарів стін (Табл Г1)
     def delete_table_G1():
         try:
-            connection = sqlite3.connect("db\MainBase.db")
+            connection = sqlite3.connect(DB_PATH)
             cursor = connection.cursor()
 
             # Видалити всі рядки з таблиці Uses_choice_G1
@@ -444,47 +1007,385 @@ def main(page: ft.Page):
         finally:
             if connection:
                 connection.close()
+    # Функція для перемикання теми
+    def toggle_theme(page):
+        global THEME
+        if THEME == ft.ThemeMode.LIGHT:
+            THEME = ft.ThemeMode.DARK
+        else:
+            THEME = ft.ThemeMode.LIGHT
+        page.theme_mode = THEME
+        page.update()
+    
+    def navigation_change(e):
+        selected_index = e.control.selected_index
+        if selected_index == 0:
+            print("Методика обрана")
+            page.launch_url(DBN_URL)
+        elif selected_index == 1:
+            print("Таблиці обрані")
+            page.controls.clear()
+            page.add(tables())  # Виклик функції для повернення вмісту сторінки
+            page.update()
+        elif selected_index == 2:
+            print("Про Forteck обрано")
+            page.controls.clear()
+            page.add(welcome_page())  # Виклик функції для повернення вмісту першої сторінки
+            page.update()
+    
+    def rail(page):
+        return ft.NavigationRail(
+            # selected_index=0,   # дефолтно обрана кнопка
+            label_type=ft.NavigationRailLabelType.ALL,
+            min_width=100,
+            min_extended_width=400,
+            leading=ft.FloatingActionButton(icon=ft.Icons.HOME, text="Головна", on_click=go_back_to_home),
+            group_alignment=-0.9,
+            destinations=[
+                ft.NavigationRailDestination(  #0
+                    icon=ft.Icons.TEXT_SNIPPET_ROUNDED,
+                    # selected_icon=ft.Icons.TEXT_SNIPPET_OUTLINED,
+                    label="Методика"
+                ),
+                ft.NavigationRailDestination(   #1
+                    icon=ft.Icon(ft.Icons.LIST_ALT_ROUNDED),
+                    selected_icon=ft.Icon(ft.Icons.VIEW_LIST_ROUNDED),
+                    label="Таблиці",
+                ),
+                ft.NavigationRailDestination(   #2
+                    icon=ft.Icon(ft.Icons.INFO_OUTLINED),
+                    selected_icon=ft.Icon(ft.Icons.INFO_ROUNDED),
+                    label="Про Forteck",
+                ),
+                # ft.NavigationRailDestination(
+                #     icon=#################,
+                #     selected_icon=ft.Icon(################3),
+                #     label_content=ft.Text("як користуватись?"),
+                # ),
+                # ft.NavigationRailDestination(
+                #     icon=ft.Icons.SETTINGS_OUTLINED,
+                #     selected_icon=ft.Icon(ft.Icons.SETTINGS),
+                #     label_content=ft.Text("Налаштування"),
+                # ),
+            ],
+            on_change=navigation_change,
+            trailing=ft.IconButton(icon=ft.Icons.BRIGHTNESS_4_SHARP, on_click=lambda e: toggle_theme(page)),
+        )
+
+    def welcome_page():
+        image_path = "https://images.pexels.com/photos/30404714/pexels-photo-30404714.png?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
+
+        if os.path.exists(image_path):
+            print(f"[INFO] Зображення знайдено: {image_path}")
+            image = ft.Image(src=f"/{image_path}",)
+        else:
+            print(f"[ERROR] Зображення не знайдено: {image_path}")  # Виведення помилки в консоль
+
+        return ft.Column(
+            [
+                ft.Image(src=image_path, width=400, height=400),  # Зображення
+                ft.Text("       У даній роботі розроблено веб-програму для автоматизації розрахунку рівня захисту протирадіаційних укриттів та сховищ. Програма базується на положеннях ДБН В.2.2-5:2023 «Захисні споруди цивільного захисту» та методичних вказівках 064-161. Розроблений інструмент дозволяє спростити та пришвидшити процес оцінки захисних властивостей споруд, враховуючи різні параметри, такі як товщина стін, матеріал конструкцій, геометричні розміри та інші. Результати роботи можуть бути використані для проєктування нових та оцінки існуючих захисних споруд.", size=18, width=1000),  # Текст
+                ft.ElevatedButton(
+                    text="Розпочати",
+                    on_click=go_back_to_1 # Перехід на першу сторінку
+                ),
+            ],
+            alignment=ft.MainAxisAlignment.CENTER,
+            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+            scroll=ft.ScrollMode.AUTO,
+            expand=True  # Додаємо expand=True для Column
+    )
+
+    def tables():
+        # image_path = "https://images.pexels.com/photos/30404714/pexels-photo-30404714.png?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
+
+        # if os.path.exists(image_path):
+        #     print(f"[INFO] Зображення знайдено: {image_path}")
+        #     image = ft.Image(src=f"/{image_path}",)
+        # else:
+        #     print(f"[ERROR] Зображення не знайдено: {image_path}")  # Виведення помилки в консоль
+
+        table2 = ft.DataTable( #A1
+            border=ft.border.all(2, "black"),
+            border_radius=20,
+            columns=[
+                ft.DataColumn(ft.Text("Клас сховища, СПП із захисними властивостями сховищ", max_lines=None, overflow=ft.TextOverflow.VISIBLE)),  #, max_lines=2, overflow=ft.TextOverflow.CLIP
+                ft.DataColumn(ft.Text("Розміщення сховищ, СПП із захисними властивостями сховищ", expand=2)),
+                ft.DataColumn(ft.Text("Надмірний тиск повітряної ударної хвилі кПа")),
+                ft.DataColumn(ft.Text("Ступінь послаблення радіаційного впливу (ступінь захисту) Аз")),
+            ],
+            rows=[],
+        )
+        
+        table3 = ft.DataTable( #Г1
+            border=ft.border.all(2, "black"),
+            border_radius=20,
+            columns=[
+                ft.DataColumn(ft.Text("Матеріал шару")),
+                ft.DataColumn(ft.Text("Товщина шару (см)")),
+                ft.DataColumn(ft.Text("Коефіцієнт послаблення дози гамма-випромінювання Kn")),
+                ft.DataColumn(ft.Text("Коефіцієнт послаблення нейтронів проникаючої радіації Ky")),
+            ],
+            rows=[],
+        )
+
+        table4 = ft.DataTable( #Г2
+            border=ft.border.all(2, "black"),
+            border_radius=20,
+            columns=[
+                ft.DataColumn(ft.Text("Тип будівлі")),
+                ft.DataColumn(ft.Text("Висота будівлі забудови (м)")),
+                ft.DataColumn(ft.Text("Щільність забудови (%)")),
+                ft.DataColumn(ft.Text("Коефіцієнт зниження дози проникаючої радіації Kзаб")),
+            ],
+            rows=[],
+        )
+
+        table5 = ft.DataTable( #Г3
+            border=ft.border.all(2, "black"),
+            border_radius=20,
+            columns=[
+                ft.DataColumn(ft.Text("Матеріал стін")),
+                ft.DataColumn(ft.Text("тип забудови")),
+                ft.DataColumn(ft.Text("товщина стін")),
+                ft.DataColumn(ft.Text("вага")),
+                ft.DataColumn(ft.Text("Площа отворів по відношенню до площі огороджувальних конструкцій будинків,%")),
+                ft.DataColumn(ft.Text("Коефіцієнт Кбуд")),
+            ],
+            rows=[],
+        )
+
+        def load_data_table5():
+            # Завантажуємо дані з бази
+            connection = sqlite3.connect(DB_PATH)
+            cursor = connection.cursor()
+            cursor.execute("SELECT wall_material_name, building_type_name, wall_thickness, weight, area_relation_percent, coefficient FROM building_coefficients")
+            data = cursor.fetchall()
+            connection.close()
+
+            table5.rows.clear()
+            for row in data:
+                table5.rows.append(
+                    ft.DataRow(
+                        cells=[
+                            ft.DataCell(ft.Text(str(row[0]))),
+                            ft.DataCell(ft.Text(str(row[1]))),
+                            ft.DataCell(ft.Text(row[2])),
+                            ft.DataCell(ft.Text(row[3])),
+                            ft.DataCell(ft.Text(row[4])),
+                            ft.DataCell(ft.Text(row[5])),
+                        ]
+                    )
+                )
+            page.update()
+
+        def load_data_table4():
+            # Завантажуємо дані з бази
+            connection = sqlite3.connect(DB_PATH)
+            cursor = connection.cursor()
+            cursor.execute("SELECT building_type_name, building_height, building_density, coefficient FROM location_condition_coefficients")
+            data = cursor.fetchall()
+            connection.close()
+
+            table4.rows.clear()
+            for row in data:
+                table4.rows.append(
+                    ft.DataRow(
+                        cells=[
+                            ft.DataCell(ft.Text(str(row[0]))),
+                            ft.DataCell(ft.Text(str(row[1]))),
+                            ft.DataCell(ft.Text(row[2])),
+                            ft.DataCell(ft.Text(row[3])),
+                        ]
+                    )
+                )
+            page.update()
+
+        def load_data_table3():
+            # Завантажуємо дані з бази
+            connection = sqlite3.connect(DB_PATH)
+            cursor = connection.cursor()
+            cursor.execute("SELECT material_name, material_thickness, neutron_dose_coefficient, gamma_dose_coefficient FROM attenuation_coefficients")
+            data = cursor.fetchall()
+            connection.close()
+
+            table3.rows.clear()
+            for row in data:
+                table3.rows.append(
+                    ft.DataRow(
+                        cells=[
+                            ft.DataCell(ft.Text(str(row[0]))),
+                            ft.DataCell(ft.Text(str(row[1]))),
+                            ft.DataCell(ft.Text(row[2])),
+                            ft.DataCell(ft.Text(row[3])),
+                        ]
+                    )
+                )
+            page.update()
+
+        def load_data_table2():
+            # Завантажуємо дані з бази
+            connection = sqlite3.connect(DB_PATH)
+            cursor = connection.cursor()
+            cursor.execute("SELECT * FROM storage_classes")
+            data = cursor.fetchall()
+            connection.close()
+
+            table2.rows.clear()
+            for row in data:
+                table2.rows.append(
+                    ft.DataRow(
+                        cells=[
+                            ft.DataCell(ft.Text(str(row[0]))),
+                            ft.DataCell(ft.Text(str(row[1]))),
+                            ft.DataCell(ft.Text(row[2])),
+                            ft.DataCell(ft.Text(row[3])),
+                        ]
+                    )
+                )
+            page.update()
+        
+        container = ft.Column(
+            [
+                ft.Row(
+                    [
+                        ft.IconButton(
+                            icon=ft.Icons.ARROW_BACK,
+                            tooltip="Назад",
+                            on_click=go_back_to_1,
+                        )
+                    ],
+                    alignment=ft.MainAxisAlignment.START,
+                ),
+                ft.Text("       У даній веб-програмі для автоматизації розрахунку рівня захисту протирадіаційних укриттів та сховищ використані такі таблиці:", size=18, width=1000),  # Текст
+                ft.Column(
+                    [
+                        ft.Text("Таблиця введених даних Аз:", size=18, weight="bold"),
+                        table2
+                    ],
+                    alignment=ft.MainAxisAlignment.CENTER,
+                    horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                    spacing=20,
+                    scroll=ft.ScrollMode.AUTO,  # Додає скролінг, якщо елементів занадто багато
+                    expand=True,  # Забезпечує, що контейнер займає всю доступну площу
+                ),
+                ft.Column(
+                    [
+                        ft.Text("Таблиця введених ШАРІВ:", size=18, weight="bold"),
+                        table3
+                    ],
+                    alignment=ft.MainAxisAlignment.CENTER,
+                    horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                    spacing=20,
+                    scroll=ft.ScrollMode.AUTO,  # Додає скролінг, якщо елементів занадто багато
+                    expand=True,  # Забезпечує, що контейнер займає всю доступну площу
+                ),
+                ft.Column(
+                    [
+                        ft.Text("Таблиця введених kzab:", size=18, weight="bold"),
+                        table4
+                    ],
+                    alignment=ft.MainAxisAlignment.CENTER,
+                    horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                    spacing=20,
+                    scroll=ft.ScrollMode.AUTO,  # Додає скролінг, якщо елементів занадто багато
+                    expand=True,  # Забезпечує, що контейнер займає всю доступну площу
+                ),
+                ft.Column(
+                    [
+                        ft.Text("Таблиця введених kбуд:", size=18, weight="bold"),
+                        table5
+                    ],
+                    alignment=ft.MainAxisAlignment.CENTER,
+                    horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                    spacing=20,
+                    scroll=ft.ScrollMode.AUTO,  # Додає скролінг, якщо елементів занадто багато
+                    expand=True,  # Забезпечує, що контейнер займає всю доступну площу
+                ),
+            ],
+            alignment=ft.MainAxisAlignment.CENTER,
+            scroll=ft.ScrollMode.AUTO,
+            expand=True,  # Додаємо expand=True для Column
+            spacing=20,
+        )
+
+        load_data_table2()
+        load_data_table3()
+        load_data_table4()
+        load_data_table5()
+
+        return container
 
     # Перша сторінка
     def first_page():
+
+        shelter_classes = load_shelter_classes()
+
+        options = []
+        for shelter_class in shelter_classes:
+            (
+                protection_class,
+                description,
+                overpressure_air_blast_wave,
+                radiation_protection_level,
+            ) = shelter_class
+            options.append(ft.dropdown.Option(key=protection_class))
+
         dropdown = ft.Dropdown(
             label="Клас сховища",
-            options=[
-                ft.dropdown.Option("A-I"),
-                ft.dropdown.Option("A-II"),
-                ft.dropdown.Option("A-III"),
-                ft.dropdown.Option("A-IV"),
-            ],
+            options=options,
             width=250,
             on_change=on_dropdown_change,
-        )
-        return ft.Column(
+        )        
+
+        return ft.Row(
             [
-                ft.Text("Виберіть клас сховища залежно від класу споруди", size=20, weight="bold"),
-                dropdown,
-                ft.ElevatedButton(
-                                content=ft.Row(
-                                    [
-                                        ft.Text("Продовжити"),
-                                        ft.Icon(ft.Icons.KEYBOARD_ARROW_RIGHT),  # Іконка після тексту
-                                    ],
-                                    alignment=ft.MainAxisAlignment.CENTER,  # Вирівнювання по центру
-                                ),
-                                on_click=second_page,  # Функція переходу на другу сторінку
-                                width=180,  # Ширина кнопки
+                rail(page),
+                ft.VerticalDivider(width=1),
+                ft.Column([ft.Text(
+                            "Виберіть клас сховища залежно від класу споруди",
+                            size=20,
+                            weight="bold",
+                        ),
+                        dropdown,
+                        ft.ElevatedButton(
+                            content=ft.Row(
+                                [
+                                    ft.Text("Продовжити", weight=ft.FontWeight.BOLD),
+                                    ft.Icon(
+                                        ft.Icons.KEYBOARD_ARROW_RIGHT
+                                    ),  # Іконка після тексту
+                                ],
+                                alignment=ft.MainAxisAlignment.CENTER,  # Вирівнювання по центру
                             ),
-                result_text_1,  # Відображення вибору під кнопкою
-                description_text_1,   # Відображення опису класу споруди з бази а1
+                            on_click=second_page,  # Функція переходу на другу сторінку
+                            width=160,  # Ширина кнопки
+                            bgcolor=ft.Colors.GREEN_200,
+                            color=ft.Colors.GREEN_900,
+                        ),
+                        result_text_1,  # Відображення вибору під кнопкою
+                        description_text_1,  # Відображення опису класу споруди з бази а1
+                ],
+                spacing=30,
+                alignment=ft.MainAxisAlignment.CENTER,
+                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                expand= True,
+                )
             ],
-            spacing=30,
-            alignment=ft.MainAxisAlignment.CENTER,
-            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+            expand=True,    
         )
+            
+
 
     # видалення табл шарів
     delete_table_G1()
     # Відображення першої сторінки
     page.add(first_page())  # Викликаємо функцію first_page
 
-ft.app(target=main, assets_dir="assets", view=ft.AppView.WEB_BROWSER)
+
+ft.app(
+    target=main,
+    assets_dir="assets",
+    view=ft.AppView.WEB_BROWSER,
+)
 # assets_dir="assets", view=ft.AppView.WEB_BROWSER
