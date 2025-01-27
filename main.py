@@ -1089,7 +1089,7 @@ def main(page: ft.Page):
                     text="Розпочати",
                     on_click=go_back_to_1 # Перехід на першу сторінку
                 ),
-            ],
+            ], 
             alignment=ft.MainAxisAlignment.CENTER,
             horizontal_alignment=ft.CrossAxisAlignment.CENTER,
             scroll=ft.ScrollMode.AUTO,
