@@ -334,6 +334,8 @@ def main(page: ft.Page):
         else "https://images.pexels.com/photos/30404801/pexels-photo-30404801.png?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
         )
 
+               
+
         page.add(
             ft.Row(
                 [
@@ -951,6 +953,7 @@ def main(page: ft.Page):
         page.controls.clear()
         # page.add(second_page(e))#error
         second_page(e)  
+        #tables()#тимчасово шоб перевірити таблиці
         page.update()
 
     # Функція для повернення на третю сторінку
@@ -1036,8 +1039,9 @@ def main(page: ft.Page):
         elif selected_index == 1:
             print("Таблиці обрані")
             page.controls.clear()
-            page.add(tables())  # Виклик функції для повернення вмісту сторінки
+            page.add(tables())  # Виклик функції для повернення вмісту сторінки !!!!!!!!!!!!!!!!!!!!!!!!!переробити. паге адд а не ретурн
             page.update()
+            # Додайте вашу дію тут
         elif selected_index == 2:
             print("Про Forteck обрано")
             page.controls.clear()
@@ -1083,26 +1087,44 @@ def main(page: ft.Page):
             trailing=ft.IconButton(icon=ft.Icons.BRIGHTNESS_4_SHARP, on_click=lambda e: toggle_theme(page)),
         )
 
+    def welcome_page():
+        image_path = "https://images.pexels.com/photos/30404714/pexels-photo-30404714.png?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
 
+        if os.path.exists(image_path):
+            print(f"[INFO] Зображення знайдено: {image_path}")
+            image = ft.Image(src=f"/{image_path}",)
+        else:
+            print(f"[ERROR] Зображення не знайдено: {image_path}")  # Виведення помилки в консоль
+
+        return ft.Row(
+            [   rail(page),
+                ft.VerticalDivider(width=1),
+                ft.Column([ft.Image(src=image_path, width=400, height=400),  # Зображення
+                ft.Text("       У даній роботі розроблено веб-програму для автоматизації розрахунку рівня захисту протирадіаційних укриттів та сховищ. Програма базується на положеннях ДБН В.2.2-5:2023 «Захисні споруди цивільного захисту» та методичних вказівках 064-161. Розроблений інструмент дозволяє спростити та пришвидшити процес оцінки захисних властивостей споруд, враховуючи різні параметри, такі як товщина стін, матеріал конструкцій, геометричні розміри та інші. Результати роботи можуть бути використані для проєктування нових та оцінки існуючих захисних споруд.", size=18, width=1000),  # Текст
+                ft.ElevatedButton(
+                    text="Розпочати",
+                    on_click=go_back_to_1 # Перехід на першу сторінку
+                ),
+            ],
+            spacing=30,
+            alignment=ft.MainAxisAlignment.CENTER,
+            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+            # scroll=ft.ScrollMode.AUTO,
+            expand=True  # Додаємо expand=True для Column
+                )
+            ],
+            expand=True,    
+        )
 
     def tables():
-        # image_path = "https://images.pexels.com/photos/30404714/pexels-photo-30404714.png?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
-
-        # if os.path.exists(image_path):
-        #     print(f"[INFO] Зображення знайдено: {image_path}")
-        #     image = ft.Image(src=f"/{image_path}",)
-        # else:
-        #     print(f"[ERROR] Зображення не знайдено: {image_path}")  # Виведення помилки в консоль
-
-        table2 = ft.DataTable( #A1
-            border=ft.border.all(2, "black"),
-            border_radius=20,
+    
+        table2 = ft.DataTable(
             columns=[
                 ft.DataColumn(
                     ft.Container(
                         content=ft.Text(
                             "Клас сховища, СПП із захисними властивостями сховищ",
-                            # size=12,
+                            size=12,
                             no_wrap=False,  # Дозволяє перенос тексту
                         ),
                         width=200,  # Встановлює ширину колонки
@@ -1112,7 +1134,7 @@ def main(page: ft.Page):
                     ft.Container(
                         content=ft.Text(
                             "Розміщення сховищ, СПП із захисними властивостями сховищ",
-                            # size=12,
+                            size=12,
                             no_wrap=False,
                         ),
                         width=250,
@@ -1122,7 +1144,7 @@ def main(page: ft.Page):
                     ft.Container(
                         content=ft.Text(
                             "Надмірний тиск повітряної ударної хвилі кПа",
-                            # size=12,
+                            size=12,
                             no_wrap=False,
                         ),
                         width=180,
@@ -1132,7 +1154,7 @@ def main(page: ft.Page):
                     ft.Container(
                         content=ft.Text(
                             "Ступінь послаблення радіаційного впливу (ступінь захисту) Аз",
-                            # size=12,
+                            size=12,
                             no_wrap=False,
                         ),
                         width=250,
@@ -1142,12 +1164,10 @@ def main(page: ft.Page):
             column_spacing=20,  # Відстань між колонками
             heading_row_height=70,  # Висота заголовків
             rows=[],
-            expand=True,
         )
+
         
         table3 = ft.DataTable( #Г1
-            border=ft.border.all(2, "black"),
-            border_radius=20,
             columns=[
                 ft.DataColumn(ft.Text("Матеріал шару")),
                 ft.DataColumn(ft.Text("Товщина шару (см)")),
@@ -1155,12 +1175,9 @@ def main(page: ft.Page):
                 ft.DataColumn(ft.Text("Коефіцієнт послаблення нейтронів проникаючої радіації Ky")),
             ],
             rows=[],
-            expand=True,
         )
 
         table4 = ft.DataTable( #Г2
-            border=ft.border.all(2, "black"),
-            border_radius=20,
             columns=[
                 ft.DataColumn(ft.Text("Тип будівлі")),
                 ft.DataColumn(ft.Text("Висота будівлі забудови (м)")),
@@ -1171,13 +1188,11 @@ def main(page: ft.Page):
         )
 
         table5 = ft.DataTable( #Г3
-            border=ft.border.all(2, "black"),
-            border_radius=20,
             columns=[
                 ft.DataColumn(ft.Text("Матеріал стін")),
-                ft.DataColumn(ft.Text("Тип забудови")),
-                ft.DataColumn(ft.Text("Товщина стін")),
-                ft.DataColumn(ft.Text("Вага")),
+                ft.DataColumn(ft.Text("тип забудови")),
+                ft.DataColumn(ft.Text("товщина стін")),
+                ft.DataColumn(ft.Text("вага")),
                 ft.DataColumn(ft.Text("Площа отворів по відношенню до площі огороджувальних конструкцій будинків,%")),
                 ft.DataColumn(ft.Text("Коефіцієнт Кбуд")),
             ],
@@ -1286,89 +1301,77 @@ def main(page: ft.Page):
                 )
             page.update()
         
-        container = ft.Row(
-            [
-            rail(page),
-            ft.VerticalDivider(width=1),
-            ft.Column(
-                [
-                ft.Row(
-                    [
-                        ft.IconButton(
-                            icon=ft.Icons.ARROW_BACK,
-                            tooltip="Назад",
-                            on_click=go_back_to_1,
-                        )
-                    ],
-                    alignment=ft.MainAxisAlignment.START,
-                ),
-                ft.Text(
-                    "       У даній веб-програмі для автоматизації розрахунку рівня захисту протирадіаційних укриттів та сховищ використані такі таблиці:", 
-                    size=18, 
-                    ),  # Текст
-                ft.Column(
-                    [
-                        ft.Text("Таблиця введених даних Аз:", size=18, weight="bold"),
-                        table2
-                    ],
-                    alignment=ft.MainAxisAlignment.CENTER,
-                    horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-                    spacing=20,
-                    scroll=ft.ScrollMode.AUTO,  # Додає скролінг, якщо елементів занадто багато
-                    expand=True,  # Забезпечує, що контейнер займає всю доступну площу
+        # rail(page),
+        #         ft.VerticalDivider(width=1),
+        main_column = ft.Row([
+                rail(page),
+                ft.VerticalDivider(width=1),
+                ft.Column([
+                ft.Text("       У даній веб-програмі для автоматизації розрахунку рівня захисту протирадіаційних укриттів та сховищ використані Бази даних:", size=18, width=1000),  # Текст
+                
+                ft.ElevatedButton(
+                    text="Розпочати",
+                    on_click=go_back_to_1 # Перехід на першу сторінку
                 ),
                 ft.Column(
-                    [
-                        ft.Text("Таблиця введених ШАРІВ:", size=18, weight="bold"),
-                        table3
-                    ],
-                    alignment=ft.MainAxisAlignment.CENTER,
-                    horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-                    spacing=20,
-                    scroll=ft.ScrollMode.AUTO,  # Додає скролінг, якщо елементів занадто багато
-                    expand=True,  # Забезпечує, що контейнер займає всю доступну площу
-                ),
+                            [
+                                ft.Text("Таблиця введених даних Аз:", size=18, weight="bold"),
+                                table2
+                            ],
+                            alignment=ft.MainAxisAlignment.CENTER,
+                            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                            spacing=20,
+                            scroll=ft.ScrollMode.AUTO,  # Додає скролінг, якщо елементів занадто багато
+                            expand=True,  # Забезпечує, що контейнер займає всю доступну площу
+                        ),
                 ft.Column(
-                    [
-                        ft.Text("Таблиця введених kzab:", size=18, weight="bold"),
-                        table4
-                    ],
-                    alignment=ft.MainAxisAlignment.CENTER,
-                    horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-                    spacing=20,
-                    scroll=ft.ScrollMode.AUTO,  # Додає скролінг, якщо елементів занадто багато
-                    expand=True,  # Забезпечує, що контейнер займає всю доступну площу
-                ),
+                            [
+                                ft.Text("Таблиця введених ШАРІВ:", size=18, weight="bold"),
+                                table3
+                            ],
+                            alignment=ft.MainAxisAlignment.CENTER,
+                            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                            spacing=20,
+                            scroll=ft.ScrollMode.AUTO,  # Додає скролінг, якщо елементів занадто багато
+                            expand=True,  # Забезпечує, що контейнер займає всю доступну площу
+                        ),
                 ft.Column(
-                    [
-                        ft.Text("Таблиця введених kбуд:", size=18, weight="bold"),
-                        table5
-                    ],
-                    alignment=ft.MainAxisAlignment.CENTER,
-                    horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-                    spacing=20,
-                    scroll=ft.ScrollMode.AUTO,  # Додає скролінг, якщо елементів занадто багато
-                    expand=True,  # Забезпечує, що контейнер займає всю доступну площу
-                ),
+                            [
+                                ft.Text("Таблиця введених kzab:", size=18, weight="bold"),
+                                table4
+                            ],
+                            alignment=ft.MainAxisAlignment.CENTER,
+                            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                            spacing=20,
+                            scroll=ft.ScrollMode.AUTO,  # Додає скролінг, якщо елементів занадто багато
+                            expand=True,  # Забезпечує, що контейнер займає всю доступну площу
+                        ),
+                ft.Column(
+                            [
+                                ft.Text("Таблиця введених kбуд:", size=18, weight="bold"),
+                                table5
+                            ],
+                            alignment=ft.MainAxisAlignment.CENTER,
+                            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                            spacing=20,
+                            scroll=ft.ScrollMode.AUTO,  # Додає скролінг, якщо елементів занадто багато
+                            expand=True,  # Забезпечує, що контейнер займає всю доступну площу
+                        ),
             ],
             alignment=ft.MainAxisAlignment.CENTER,
-            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
             scroll=ft.ScrollMode.AUTO,
-            expand=True,  # Додаємо expand=True для Column
-            spacing=20,
-        )
+            expand=True  # Додаємо expand=True для Column
+            )
         ],
-        expand=True,
-
-    )
-    
-
+            expand=True, 
+        )
         load_data_table2()
         load_data_table3()
         load_data_table4()
         load_data_table5()
 
-        return container
+        # Повертаємо весь компонент
+        return main_column
 
     # Перша сторінка
     def first_page():
@@ -1429,48 +1432,7 @@ def main(page: ft.Page):
             expand=True,    
         )
             
-    def welcome_page():
-        image_path = "https://images.pexels.com/photos/30404714/pexels-photo-30404714.png?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
 
-        # if os.path.exists(image_path):       #тільки для файлів у дерикторіях
-        #     print(f"[INFO] Зображення знайдено: {image_path}")
-        #     image = ft.Image(src=f"/{image_path}",)
-        # else:
-        #     print(f"[ERROR] Зображення не знайдено: {image_path}")  # Виведення помилки в консоль
-
-        return ft.Row(
-            [   rail(page),
-                ft.VerticalDivider(width=1),
-                ft.Column(
-                    [
-                    ft.Image(src=image_path, width=400, height=400),  # Зображення
-                    ft.Text("       У даній роботі розроблено веб-програму для автоматизації розрахунку рівня захисту протирадіаційних укриттів та сховищ. Програма базується на положеннях ДБН В.2.2-5:2023 «Захисні споруди цивільного захисту» та методичних вказівках 064-161. Розроблений інструмент дозволяє спростити та пришвидшити процес оцінки захисних властивостей споруд, враховуючи різні параметри, такі як товщина стін, матеріал конструкцій, геометричні розміри та інші. Результати роботи можуть бути використані для проєктування нових та оцінки існуючих захисних споруд.", size=18, width=1000),  # Текст
-                    ft.ElevatedButton(
-                        content=ft.Row(
-                            [
-                                ft.Text("Розпочати", weight=ft.FontWeight.BOLD),
-                                ft.Icon(
-                                    ft.Icons.KEYBOARD_ARROW_RIGHT
-                                ),  # Іконка після тексту
-                            ],
-                            alignment=ft.MainAxisAlignment.CENTER,  # Вирівнювання по центру
-                        ),
-                        on_click=go_back_to_1,  # Функція переходу на другу сторінку
-                        width=130,  # Ширина кнопки
-                        height=40,
-                        bgcolor=ft.Colors.GREEN_200,
-                        color=ft.Colors.GREEN_900,
-                    ),
-                    ],
-                    spacing=30,
-                    alignment=ft.MainAxisAlignment.CENTER,
-                    horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-                    scroll=ft.ScrollMode.AUTO,
-                    expand=True  # Додаємо expand=True для Column
-                )
-            ],
-            expand=True,    
-        )
 
     # видалення табл шарів
     delete_table_G1()
