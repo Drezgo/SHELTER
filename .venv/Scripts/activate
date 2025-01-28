@@ -35,7 +35,7 @@ deactivate () {
 # unset irrelevant variables
 deactivate nondestructive
 
-VIRTUAL_ENV="F:\UDAV\SHELTER\.venv"
+VIRTUAL_ENV="D:\IT\Papka\SHELTER Andego Krytoi\.venv"
 export VIRTUAL_ENV
 
 _OLD_VIRTUAL_PATH="$PATH"
