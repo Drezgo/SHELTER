@@ -314,19 +314,27 @@ def main(page: ft.Page):
         )
 
         # Посилання на GIF, залежно від результату
-        gif_link = ft.Text(
-            spans=[
-                ft.TextSpan("Детальніше дивіться тут: "),
-                ft.TextSpan(
-                    "натисніть для перегляду GIF :)",
-                    on_click=lambda e: page.launch_url(
-                        "https://tenor.com/uk/view/social-credit-xin-po-pich-gif-25235227"
-                        if Az <= Azf
-                        else "https://tenor.com/uk/view/social-credit-system-china-social-credit-negative-social-credit-social-credit-meme-social-credit-score-gif-25001796"
-                    ),
-                ),
-            ],
+        # gif_link = ft.Text(
+        #     spans=[
+        #         ft.TextSpan("Детальніше дивіться тут: "),
+        #         ft.TextSpan(
+        #             "натисніть для перегляду GIF :)",
+        #             on_click=lambda e: page.launch_url(
+        #                 "https://tenor.com/uk/view/social-credit-xin-po-pich-gif-25235227"
+        #                 if Az <= Azf
+        #                 else "https://tenor.com/uk/view/social-credit-system-china-social-credit-negative-social-credit-social-credit-meme-social-credit-score-gif-25001796"
+        #             ),
+        #         ),
+        #     ],
+        # )
+
+        image_Follout = (
+            "https://images.pexels.com/photos/30404800/pexels-photo-30404800.png?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
+        if Az <= Azf
+        else "https://images.pexels.com/photos/30404801/pexels-photo-30404801.png?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
         )
+
+               
 
         page.add(
             ft.Row(
@@ -352,7 +360,6 @@ def main(page: ft.Page):
                             table,
                             # Результат порівняння
                             result_text,
-                            gif_link,
                         ],
                         alignment=ft.MainAxisAlignment.CENTER,
                         horizontal_alignment=ft.CrossAxisAlignment.CENTER,
@@ -360,10 +367,16 @@ def main(page: ft.Page):
                         spacing=30,
                         scroll=ft.ScrollMode.AUTO,
                     ),
-                ],
-                expand=True
-            )
+                    ft.Column([ft.Image(src=image_Follout, width=400, height=400),],# Зображення
+                    spacing=30,
+                    alignment=ft.MainAxisAlignment.CENTER,
+                    horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                    expand=True,  # Додаємо expand=True для другого Column
+                ),
+            ],
+            expand=True,
         )
+    )
 
     def fourth_page(e):  # 4 сторінка
         page.controls.clear()
