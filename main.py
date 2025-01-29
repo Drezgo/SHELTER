@@ -7,9 +7,10 @@ DB_PATH = os.path.join(os.path.dirname(__file__), "db", "MainBase.db")
 
 # LOGO_PATH = os.path.join(os.path.dirname(__file__), "FORTECK_LOGO.png")
 
-THEME = ft.ThemeMode.DARK
+THEME = ft.ThemeMode.LIGHT
 
-DBN_URL="https://drive.google.com/file/d/1zMcW62G3RvexoyxLsiAHTCz2yYCVKe4h/view?usp=sharing"
+DBN_URL="https://e-construction.gov.ua/files/new_doc/3109090634326083293/2023-09-08/8179d0ee-02d3-4ceb-87c0-f64742b2e15b.pdf"
+# https://e-construction.gov.ua/laws_detail/3530699073772324792?doc_type=2
 
 STEPS_SELECT_RESULTS = {}
 
@@ -277,7 +278,7 @@ def main(page: ft.Page):
         for coeff in STEPS_SELECT_RESULTS["coefficients"]:
             Kn = Kn * coeff["kn"]
 
-        KN = 1.0
+        KN = 1.4
 
         Azf = 1.18 * (Ky * Kn) * (Kzab / Kbud) * KN / (Ky + Kn)
 
@@ -350,7 +351,7 @@ def main(page: ft.Page):
                                             on_click=go_back_to_4,
                                         )
                                     ],
-                                    alignment=ft.MainAxisAlignment.START,
+                                    alignment=ft.MainAxisAlignment.START,  
                                 ),
                                 padding=ft.Padding(10, 10, 0, 0),
                                 expand=False,
@@ -842,14 +843,14 @@ def main(page: ft.Page):
                                 ),
                                 material_dropdown,
                                 ft.Text(
-                                    "2. Вкажіть товщину шару матеріалу стіни (см)",
+                                    "2. Вкажіть товщину шару матеріалу стіни (см)*",
                                     size=16,
                                     weight="bold",
                                 ),
                                 row,
                                 ft.Text(
-                                    "Товщина має бути від 10 до 150 см та кратною 5 см ",
-                                    size=10,
+                                    "* Товщина має бути від 10 до 150 см та кратною 5 см ",
+                                    size=12,
                                     weight="bold",
                                     color=ft.Colors.RED,
                                 ),
@@ -874,7 +875,7 @@ def main(page: ft.Page):
                                     ],
                                     alignment=ft.MainAxisAlignment.CENTER,
                                 ),
-                                ft.VerticalDivider()
+                                ft.VerticalDivider(),
                             ],
                             alignment=ft.MainAxisAlignment.CENTER,
                             horizontal_alignment=ft.CrossAxisAlignment.CENTER,
@@ -884,8 +885,9 @@ def main(page: ft.Page):
                         ft.Column(
                             [
                                 ft.Text("Таблиця введених даних:", size=18, weight="bold"),
-                                table
-                            ],
+                                table,
+                                # ft.OutlinedButton("Очистити таблицю", on_click=delete_table_G1(), width=150, style=ft.ButtonStyle(side=ft.BorderSide(2, ft.Colors.RED))),
+                            ],  
                             alignment=ft.MainAxisAlignment.CENTER,
                             horizontal_alignment=ft.CrossAxisAlignment.CENTER,
                             spacing=20,
@@ -936,7 +938,7 @@ def main(page: ft.Page):
         page.controls.clear()
         page.add(first_page())  # Виклик функції для повернення вмісту першої сторінки
         page.update()
-        delete_table_G1()
+        # delete_table_G1()
         STEPS_SELECT_RESULTS = {}#!!!!!!!!!!!!!! !!!!!!!!!!!!!!! !!!!!!! має стерти всі дані, але не стирає всі! доробити
         # анулювання змінних для зберігання даних з STEPS_SELECT_RESULTS та інші змініні:
 
@@ -950,7 +952,7 @@ def main(page: ft.Page):
     def go_back_to_2(e):
         page.controls.clear()
         # page.add(second_page(e))#error
-        second_page(e)  
+        second_page(e)
         page.update()
 
     # Функція для повернення на третю сторінку
