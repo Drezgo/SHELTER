@@ -370,7 +370,7 @@ def main(page: ft.Page):
                     alignment=ft.MainAxisAlignment.CENTER,
                     horizontal_alignment=ft.CrossAxisAlignment.CENTER,
                     expand=True,  # Додаємо expand=True для другого Column
-                ),
+                    ),
             ],
             expand=True,
         )
@@ -1438,39 +1438,61 @@ def main(page: ft.Page):
         # else:
         #     print(f"[ERROR] Зображення не знайдено: {image_path}")  # Виведення помилки в консоль
 
-        return ft.Row(
+        content = ft.Row(
             [   rail(page),
                 ft.VerticalDivider(width=1),
                 ft.Column(
                     [
-                    ft.Image(src=image_path, width=400, height=400),  # Зображення
-                    ft.Text("       У даній роботі розроблено веб-програму для автоматизації розрахунку рівня захисту протирадіаційних укриттів та сховищ. Програма базується на положеннях ДБН В.2.2-5:2023 «Захисні споруди цивільного захисту» та методичних вказівках 064-161. Розроблений інструмент дозволяє спростити та пришвидшити процес оцінки захисних властивостей споруд, враховуючи різні параметри, такі як товщина стін, матеріал конструкцій, геометричні розміри та інші. Результати роботи можуть бути використані для проєктування нових та оцінки існуючих захисних споруд.", size=18, width=1000),  # Текст
-                    ft.ElevatedButton(
-                        content=ft.Row(
-                            [
-                                ft.Text("Розпочати", weight=ft.FontWeight.BOLD),
-                                ft.Icon(
-                                    ft.Icons.KEYBOARD_ARROW_RIGHT
-                                ),  # Іконка після тексту
-                            ],
-                            alignment=ft.MainAxisAlignment.CENTER,  # Вирівнювання по центру
+                    ft.Text("Forteck", size=40, weight=ft.FontWeight.BOLD),  # Заголовок
+                    ft.Container(
+                        ft.Container(
+                            ft.Text("Дана веб-програма розроблена для автоматизаціїі розрахунку рівня захисту протирадіаційних укриттів та сховищ. Програма базується на положеннях ДБН В.2.2-5:2023 «Захисні споруди цивільного захисту». Розроблений інструмент дозволяє спростити та пришвидшити процес оцінки захисних властивостей споруд, враховуючи різні параметри. Результати можуть бути використані для проєктування нових та оцінки існуючих захисних споруд.", size=18),  # Текст
+                            border=ft.border.only(left=ft.border.BorderSide(width=5, color=ft.colors.BLUE)),  # Додаємо лінію зліва
+                            padding=ft.padding.only(left=20),  # Відступ зліва від лінії до кнопки
                         ),
-                        on_click=go_back_to_1,  # Функція переходу на другу сторінку
-                        width=130,  # Ширина кнопки
-                        height=40,
-                        bgcolor=ft.Colors.GREEN_200,
-                        color=ft.Colors.GREEN_900,
+                        padding=ft.Padding(70, 0, 0, 0),  
+                    ),
+                    ft.Container(
+                        ft.ElevatedButton(
+                            content=ft.Row(
+                                [
+                                    ft.Text("Розпочати", weight=ft.FontWeight.BOLD, size=18),   
+                                    ft.Icon(
+                                        ft.Icons.KEYBOARD_ARROW_RIGHT
+                                    ),  # Іконка після тексту
+                                ],
+                                alignment=ft.MainAxisAlignment.CENTER,  # Вирівнювання по центру
+                            ),
+                            on_click=go_back_to_1,  # Функція переходу на другу сторінку
+                            width=180,  # Ширина кнопки
+                            height=50,
+                            bgcolor=ft.Colors.GREEN_200,
+                            color=ft.Colors.GREEN_900,
+                        ),
+                        padding=ft.Padding(70, 0, 0, 0),
+                        alignment=ft.Alignment(-1,-1),
                     ),
                     ],
                     spacing=30,
                     alignment=ft.MainAxisAlignment.CENTER,
                     horizontal_alignment=ft.CrossAxisAlignment.CENTER,
                     scroll=ft.ScrollMode.AUTO,
-                    expand=True  # Додаємо expand=True для Column
-                )
+                    expand=True,  # Додаємо expand=True для Column
+                ),
+                ft.Column([ft.Image(src=image_path, # Зображення LOGO
+                    width=400, 
+                    height=400,
+                    ),],  
+                spacing=30,
+                alignment=ft.MainAxisAlignment.CENTER,
+                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                expand=True,  # Додаємо expand=True для другого Column
+                ),
             ],
             expand=True,    
         )
+
+        return content
 
     # видалення табл шарів
     delete_table_G1()
