@@ -429,7 +429,7 @@ def main(page: ft.Page):
         )
 
         dropdown_right_2 = ft.Dropdown(
-            label="площина вікон",
+            label="Площина отворів",
             options=[
                 ft.dropdown.Option("10"),
                 ft.dropdown.Option("20"),
