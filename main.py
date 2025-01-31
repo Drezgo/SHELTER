@@ -936,7 +936,7 @@ def main(page: ft.Page):
     # Функція для повернення на першу сторінку
     def go_back_to_home(e):
         page.controls.clear()
-        page.add(first_page())  # Виклик функції для повернення вмісту першої сторінки
+        page.add(welcome_page())  # Виклик функції для повернення вмісту першої сторінки
         page.update()
         # delete_table_G1()
         STEPS_SELECT_RESULTS = {}#!!!!!!!!!!!!!! !!!!!!!!!!!!!!! !!!!!!! має стерти всі дані, але не стирає всі! доробити
