@@ -1,0 +1,93 @@
+# для постійного користування
+python -m venv .venv
+.\.venv\Scripts\activate
+pip install -r requirements.txt
+
+
+##############    Для першого користування    ############
+
+# і так зрозуміло
+python --version
+
+#Створення віртуального середовища (в кінці його назва)
+python -m venv venv
+
+#Атктивування середовища(якщо помилка - виконати від адміністратора(
+    Адмін права -> Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
+    (ОБОВ'ЯЗКОВО) Юзер права -> Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy Restricted))
+venv\Scripts\activate
+
+#Деактивування
+deactivate
+
+# Перевірка встановлених пакетів
+pip freeze
+python -m pip list --format=columns
+
+
+# Оновлення
+pip install -U pip setuptools
+
+# Встановлення
+pip install requests lxml
+
+# Видалення
+pip uninstall requests lxml -y
+
+# Створення файлу з залежностями
+pip freeze > requirements.txt
+
+# Завантаження з файлу з залежностями
+pip install -r requirements.txt
+
+# відкотити останній коміт, без втрати файлів
+git reset HEAD~
+
+
+git status
+
+# створення і перенесення на нову гілку
+git checkout -b branch_name
+
+# Пушити нову гілку на віддалений репозиторій і налаштувати її для відстеження. 
+# Ключ -u (або --set-upstream) налаштує віддалену гілку bars на сервері як відстежувану для вашої локальної гілки.
+# origin це назва віддаленого репо
+git push -u origin branch_name
+
+# так само привязка локальної до ремоут бренчі (bars відалена, Andrey_Br локальна)
+git branch --set-upstream-to=SHELTER/bars Andrey_Br
+
+git add file_name
+git commit -m "some text"
+
+
+git push origin branch_name
+
+# оновлення локального git з ремоутом ???
+git fetch 
+
+# видалення локальної бренчі (примусово -->  git branch -D <назва_гілки>)
+git branch -d <назва_гілки>
+ 
+
+# видалення ремоут бренчі
+git push <remote> --delete <назва_гілки>
+
+# Видалення "мертвих" віддалених гілок у локальному репозиторії
+git fetch --prune
+
+# переіменування назви віддаленого репо (так як до нього буде звертатись локальний, переіменовує origin --> SHELTER)
+git remote rename origin SHELTER
+
+# Ця команда видаляє файл тільки з індексу Git, але залишає його у локальній файловій системі. 
+# Тобто, файл більше не відстежується Git, але фізично залишається у вашому проєкті.
+git rm --cached myfile.txt
+
+# ^ тільки папку
+git rm --cached -r myfolder/
+
+# HARD CLONE з чужої бренчі
+git reset --hard SHELTER/bars
+
+# FORCE PUSH чужого коміта в свою бренчу
+git push --force SHELTER trench
