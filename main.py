@@ -264,7 +264,7 @@ def main(page: ft.Page):
 
     def fifth_page():
         page.controls.clear()
-        print(STEPS_SELECT_RESULTS)
+        print("Результат станом на 5 сторінку: ", STEPS_SELECT_RESULTS)
         #обрахунок 
         Az = STEPS_SELECT_RESULTS["Az"]
         Kzab = STEPS_SELECT_RESULTS["coefficient_zab"]
@@ -287,18 +287,21 @@ def main(page: ft.Page):
             "Aз", "≤", "Aзф", "=", "1.18", "*", "Ky", "*", "Kn", "*", "(", "Kзаб", "/", "Kбуд", ")", "*", "KN", "/", "(", "Ky", "+", "Kn", ")"
         ]
         substituted_values = [
-            f"{Az}", "≤", f"{round(Azf, 3)}", "=", "1.18", "*", f"{round(Ky, 3)}", "*", f"{round(Kn, 3)}", "*", "(", f"{Kzab}", "/", f"{Kbud}", ")", "*", f"{KN}", "/", "(", f"{round(Ky, 3)}", "+", f"{round(Kn, 3)}", ")"
+            f"{Az}", "≤", f"{round(Azf, 3)}", "=", "1.18", "*", f"{round(Ky, 3)}", "*", f"{round(Kn, 3)}", "*", "(", f"{round(Kzab, 3)}", "/", f"{round(Kbud, 3)}", ")", "*", f"{round(KN,3)}", "/", "(", f"{round(Ky, 3)}", "+", f"{round(Kn, 3)}", ")"
         ]
 
         # Таблиця
         table = ft.DataTable(
+            border=ft.border.all(2, "black" if THEME == ft.ThemeMode.LIGHT else "white"),
+            border_radius=20,
             columns=[ft.DataColumn(ft.Text(element, weight="bold")) for element in formula_elements],  # Елементи формули як заголовки колонок
             rows=[
                 ft.DataRow(
                     cells=[ft.DataCell(ft.Text(value, size=12, text_align=ft.TextAlign.CENTER)) for value in substituted_values],  # Підставлені значення
                 )
             ],
-            column_spacing=15,  # Зменшення відстані між колонками
+            column_spacing=10,  # Зменшення відстані між колонками
+            visible=False,  #  таблиця прихована за замовчуванням
         )
 
         result_text = ft.Text(
@@ -313,7 +316,7 @@ def main(page: ft.Page):
             ],
             size=16,
         )
-
+        
         # Посилання на GIF, залежно від результату
         # gif_link = ft.Text(
         #     spans=[
@@ -335,6 +338,11 @@ def main(page: ft.Page):
         else "https://images.pexels.com/photos/30404801/pexels-photo-30404801.png?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
         )
 
+        def toogle_table(e):
+            print(e.control.value)
+            table.visible = e.control.value  # Приховуємо або показуємо таблицю
+            page.update()  # Оновлюємо сторінку, щоб відобразити зміни
+        
         page.add(
             ft.Row(
                 [
@@ -351,22 +359,23 @@ def main(page: ft.Page):
                                             on_click=go_back_to_4,
                                         )
                                     ],
-                                    alignment=ft.MainAxisAlignment.START,  
+                                    alignment=ft.MainAxisAlignment.START, 
                                 ),
                                 padding=ft.Padding(10, 10, 0, 0),
                                 expand=False,
                             ),
                             table,
+                            ft.Switch(label="   Показати обрахунки", value=False, on_change=toogle_table, ),
                             # Результат порівняння
                             result_text,
                         ],
                         alignment=ft.MainAxisAlignment.CENTER,
                         horizontal_alignment=ft.CrossAxisAlignment.CENTER,
                         expand=True,
-                        spacing=30,
+                        spacing=20,
                         scroll=ft.ScrollMode.AUTO,
                     ),
-                    ft.Column([ft.Image(src=image_Follout, width=400, height=400),],# Зображення
+                    ft.Column([ft.Image(src=image_Follout, width=400, height=400),], # Зображення
                     spacing=30,
                     alignment=ft.MainAxisAlignment.CENTER,
                     horizontal_alignment=ft.CrossAxisAlignment.CENTER,
@@ -376,6 +385,7 @@ def main(page: ft.Page):
             expand=True,
         )
     )
+    
 
     def fourth_page(e):  # 4 сторінка
         page.controls.clear()
@@ -805,24 +815,24 @@ def main(page: ft.Page):
             ft.Row([
                 rail(page),
                 ft.VerticalDivider(width=1),
+                ft.Container(
+                    ft.Row(
+                            [
+                                ft.IconButton(
+                                    icon=ft.Icons.ARROW_BACK,
+                                    tooltip="Назад",
+                                    on_click=go_back_to_1,
+                                )
+                            ],
+                            # alignment = ft.MainAxisAlignment.START,
+                        ),
+                    padding=ft.Padding(10, 10, 0, 0),
+                    alignment=ft.alignment.top_left,
+                ),
                 ft.Row(
                     [   
                         ft.Column(
                             [
-                                ft.Container(
-                                    ft.Row(
-                                        [
-                                            ft.IconButton(
-                                                icon=ft.Icons.ARROW_BACK,
-                                                tooltip="Назад",
-                                                on_click=go_back_to_1,
-                                            )
-                                        ],
-                                        alignment=ft.MainAxisAlignment.START,
-                                    ),
-                                    padding=ft.Padding(10, 10, 0, 0),
-                                    expand=False,
-                                ),
                                 ft.Text(
                                     spans=[
                                         ft.TextSpan(
@@ -1096,8 +1106,10 @@ def main(page: ft.Page):
         # else:
         #     print(f"[ERROR] Зображення не знайдено: {image_path}")  # Виведення помилки в консоль
 
+        # page.route = "/tables"
+
         table2 = ft.DataTable( #A1
-            border=ft.border.all(2, "black"),
+            border=ft.border.all(2, "black" if THEME == ft.ThemeMode.LIGHT else "white"),
             border_radius=20,
             columns=[
                 ft.DataColumn(
@@ -1138,17 +1150,20 @@ def main(page: ft.Page):
                             no_wrap=False,
                         ),
                         width=250,
-                    )
+                        
+                    ), 
                 ),
             ],
             column_spacing=20,  # Відстань між колонками
             heading_row_height=70,  # Висота заголовків
+            data_row_min_height=58,  # Мінімальна висота рядків
+            height=280,
             rows=[],
             expand=True,
         )
         
         table3 = ft.DataTable( #Г1
-            border=ft.border.all(2, "black"),
+            border=ft.border.all(2, "black" if THEME == ft.ThemeMode.LIGHT else "white"),
             border_radius=20,
             columns=[
                 ft.DataColumn(ft.Text("Матеріал шару")),
@@ -1161,7 +1176,7 @@ def main(page: ft.Page):
         )
 
         table4 = ft.DataTable( #Г2
-            border=ft.border.all(2, "black"),
+            border=ft.border.all(2, "black" if THEME == ft.ThemeMode.LIGHT else "white"),
             border_radius=20,
             columns=[
                 ft.DataColumn(ft.Text("Тип будівлі")),
@@ -1173,7 +1188,7 @@ def main(page: ft.Page):
         )
 
         table5 = ft.DataTable( #Г3
-            border=ft.border.all(2, "black"),
+            border=ft.border.all(2, "black" if THEME == ft.ThemeMode.LIGHT else "white"),
             border_radius=20,
             columns=[
                 ft.DataColumn(ft.Text("Матеріал стін")),
@@ -1187,6 +1202,8 @@ def main(page: ft.Page):
         )
 
         # table6 = ft.DataTable( #Г4
+        #     border=ft.border.all(2, "black" if THEME == ft.ThemeMode.LIGHT else "white"),
+        #     border_radius=20,
         #     columns=[
         #         ft.DataColumn(ft.Text("Матеріал стін")),
         #         ft.DataColumn(ft.Text("тип забудови")),
@@ -1283,7 +1300,7 @@ def main(page: ft.Page):
                             ft.DataCell(ft.Text(str(row[1]))),
                             ft.DataCell(ft.Text(row[2])),
                             ft.DataCell(ft.Text(row[3])),
-                        ]
+                        ],
                     )
                 )
             page.update()
@@ -1449,7 +1466,7 @@ def main(page: ft.Page):
                     ft.Container(
                         ft.Container(
                             ft.Text("Дана веб-програма розроблена для автоматизаціїі розрахунку рівня захисту протирадіаційних укриттів та сховищ. Програма базується на положеннях ДБН В.2.2-5:2023 «Захисні споруди цивільного захисту». Розроблений інструмент дозволяє спростити та пришвидшити процес оцінки захисних властивостей споруд, враховуючи різні параметри. Результати можуть бути використані для проєктування нових та оцінки існуючих захисних споруд.", size=18),  # Текст
-                            border=ft.border.only(left=ft.border.BorderSide(width=5, color=ft.colors.BLUE)),  # Додаємо лінію зліва
+                            border=ft.border.only(left=ft.border.BorderSide(width=5, color=ft.Colors.BLUE)),  # Додаємо лінію зліва
                             padding=ft.padding.only(left=20),  # Відступ зліва від лінії до кнопки
                         ),
                         padding=ft.Padding(70, 0, 0, 0),  

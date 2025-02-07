@@ -17,3 +17,32 @@ https://github.com/GnuriaN/format-README/blob/master/emoji.md
 TUTORIAL .MD
 https://www.youtube.com/watch?v=NXNf9aYTCZ0&ab_channel=PyLounge-%D0%BF%D1%80%D0%BE%D0%B3%D1%80%D0%B0%D0%BC%D0%BC%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5%D0%BD%D0%B0Python%D0%B8%D0%B2%D1%81%D1%91%D0%BEIT
 -->
+
+
+/shelter_protection
+├── main.py                # Точка входу в застосунок
+├── /database              # Модуль роботи з базою даних
+│   ├── __init__.py
+│   ├── db.py              # Функції для взаємодії з SQLite
+│   ├── models.py          # Опис структури таблиць
+│   └── seed.py            # Початкове заповнення БД (якщо потрібно)
+├── /logic                 # Бізнес-логіка обрахунків
+│   ├── __init__.py
+│   ├── calculations.py    # Формули та алгоритми розрахунків
+│   ├── validation.py      # Перевірка вхідних даних
+│   ├── helpers.py         # Додаткові допоміжні функції
+├── /ui                    # Інтерфейс програми
+│   ├── __init__.py
+│   ├── pages.py           # Всі сторінки Flet UI
+│   ├── components.py      # Окремі UI-елементи (кнопки, таблиці)
+│   ├── navigation.py      # Логіка перемикання сторінок
+├── /static                # Статичні файли (якщо потрібно)
+│   ├── logo.png
+│   ├── styles.css
+├── /config                # Налаштування
+│   ├── __init__.py
+│   ├── settings.py        # Глобальні змінні (шляхи, API URL тощо)
+│   └── secrets.py         # Конфіденційні дані (НЕ заливати в Git)
+├── requirements.txt       # Залежності
+├── README.md              # Документація
+└── .gitignore             # Ігнорування непотрібних файлів
