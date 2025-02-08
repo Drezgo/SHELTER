@@ -46,4 +46,3 @@ https://www.youtube.com/watch?v=NXNf9aYTCZ0&ab_channel=PyLounge-%D0%BF%D1%80%D0%
 ├── requirements.txt       # Залежності
 ├── README.md              # Документація
 └── .gitignore             # Ігнорування непотрібних файлів
-
