@@ -1,3 +1,19 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # Аз ≤ Азф = 1,18 (Ky,i × Kn,i) × Kp × KN / (Ky,i + Kn,i)
 
 # Аз ≤ Азф = 1,18 (Ky,i × Kn,i) × (Kзаб / Кбуд) × KN / (Ky,i + Kn,i)
@@ -10,25 +26,29 @@
 # житлова, забор з бетону
 # висота 8-10, щільність 10%, товщина забору 20 см, площа отворів 10%
 
-results = {'Az': 1000, 'coefficients': [{'material': 'Сталь', 'thickness': 30, 'kn': 14.0, 'ky': 430.0}, {'material': 'Цегла', 'thickness': 35, 'kn': 24.0, 'ky': 10.0}, {'material': 'Бетон', 'thickness': 20, 'kn': 23.0, 'ky': 5.3}], 'coefficient_zab': 1.8, 'coefficient_bud': 0.1}
 
-Az = results["Az"]
-Kzab = results["coefficient_zab"]
-Kbud = results["coefficient_bud"]
+###############################################################################################################################################
+# results = {'Az': 1000, 'coefficients': [{'material': 'Сталь', 'thickness': 30, 'kn': 14.0, 'ky': 430.0}, {'material': 'Цегла', 'thickness': 35, 'kn': 24.0, 'ky': 10.0}, {'material': 'Бетон', 'thickness': 20, 'kn': 23.0, 'ky': 5.3}], 'coefficient_zab': 1.8, 'coefficient_bud': 0.1}
 
-Ky = 1
-for coeff in results["coefficients"]:
-    Ky = Ky * coeff["ky"]
+# Az = results["Az"]
+# Kzab = results["coefficient_zab"]
+# Kbud = results["coefficient_bud"]
 
-Kn = 1
-for coeff in results["coefficients"]:
-    Kn = Kn * coeff["kn"]
+# Ky = 1
+# for coeff in results["coefficients"]:
+#     Ky = Ky * coeff["ky"]
 
-KN = 1.0
+# Kn = 1
+# for coeff in results["coefficients"]:
+#     Kn = Kn * coeff["kn"]
 
-Azf = 1.18 * (Ky * Kn) * (Kzab / Kbud) * KN / (Ky + Kn)
-print("Az: ", Az)
-print("Azf: ", Azf)
+# KN = 1.0
+
+# Azf = 1.18 * (Ky * Kn) * (Kzab / Kbud) * KN / (Ky + Kn)
+# print("Az: ", Az)
+# print("Azf: ", Azf)
+####################################################################################################
+
 
 # OLD
 # Az = 1000

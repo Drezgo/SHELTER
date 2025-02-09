@@ -1,2 +1,2 @@
-from .settings import function
-__all__ = ['function']
+from .settings import DB_PATH, LOGO_URL, THEME, DBN_URL, STEPS_SELECT_RESULTS
+__all__ = ['DB_PATH', 'LOGO_URL', 'THEME', 'DBN_URL', 'STEPS_SELECT_RESULTS']
