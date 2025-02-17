@@ -10,7 +10,7 @@ def main(page: ft.Page):
     # Налаштування сторінки
     page.window.width = 900    #для desktop-вікна
     page.window.height = 600    #для desktop-вікна
-    page.title = "Forteck" #Розрахунок захисту укриттів від радіації
+    page.title = "Forteck - розрахунок захисту укриттів від радіації" 
     page.vertical_alignment = ft.MainAxisAlignment.CENTER
     page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
     page.theme_mode = THEME
