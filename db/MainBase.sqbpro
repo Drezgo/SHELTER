@@ -1,7 +1,46 @@
-<?xml version="1.0" encoding="UTF-8"?><sqlb_project><db path="MainBase.db" readonly="0" foreign_keys="1" case_sensitive_like="0" temp_store="0" wal_autocheckpoint="1000" synchronous="2"/><attached/><window><main_tabs open="structure browser pragmas query" current="0"/></window><tab_structure><column_width id="0" width="300"/><column_width id="1" width="0"/><column_width id="2" width="100"/><column_width id="3" width="1505"/><column_width id="4" width="0"/><expanded_item id="0" parent="1"/><expanded_item id="1" parent="1"/><expanded_item id="2" parent="1"/><expanded_item id="3" parent="1"/></tab_structure><tab_browse><table title="Uses_choice_G1" custom_title="0" dock_id="1" table="4,14:mainUses_choice_G1"/><dock_state state="000000ff00000000fd00000001000000020000000000000000fc0100000001fb000000160064006f0063006b00420072006f00770073006500310100000000ffffffff0000012e00ffffff000000000000000000000004000000040000000800000008fc00000000"/><default_encoding codec=""/><browse_table_settings/></tab_browse><tab_sql><sql name="SQL 1*">CREATE TRIGGER reset_autoincrement_Uses_choice_G1
-AFTER DELETE ON Uses_choice_G1
-WHEN (SELECT COUNT(*) FROM Uses_choice_G1) = 0
-BEGIN
-    DELETE FROM sqlite_sequence WHERE name = 'Uses_choice_G1';
-END;
-</sql><current_tab id="0"/></tab_sql></sqlb_project>
+<?xml version="1.0" encoding="UTF-8"?><sqlb_project><db path="MainBase.db" readonly="0" foreign_keys="1" case_sensitive_like="0" temp_store="0" wal_autocheckpoint="1000" synchronous="2"/><attached/><window><main_tabs open="structure browser pragmas query" current="0"/></window><tab_structure><column_width id="0" width="300"/><column_width id="1" width="0"/><column_width id="2" width="100"/><column_width id="3" width="1505"/><column_width id="4" width="0"/><expanded_item id="0" parent="1"/><expanded_item id="0" parent="0"/><expanded_item id="1" parent="1"/><expanded_item id="2" parent="1"/><expanded_item id="3" parent="1"/></tab_structure><tab_browse><table title="Uses_choice_G1" custom_title="0" dock_id="1" table="4,14:mainUses_choice_G1"/><dock_state state="000000ff00000000fd00000001000000020000000000000000fc0100000001fb000000160064006f0063006b00420072006f00770073006500310100000000ffffffff0000012e00ffffff000000000000000000000004000000040000000800000008fc00000000"/><default_encoding codec=""/><browse_table_settings/></tab_browse><tab_sql><sql name="SQL 1*">CREATE TABLE MaterialDensity (
+    Material VARCHAR(50),
+    Density DECIMAL(3, 2),
+    Moisture INT,
+    ThicknessRange VARCHAR(20),
+    KN DECIMAL(2, 1)
+);
+
+INSERT INTO MaterialDensity (Material, Density, Moisture, ThicknessRange, KN) VALUES
+('Пісок', 1.7, 5, 'від 10 до 20', 1.4),
+('Пісок', 1.7, 5, 'від 20 до 35', 1.2),
+('Пісок', 1.7, 5, 'від 35 до 50', 1.0),
+('Пісок', 1.7, 5, 'від 50 до 80', 0.9),
+('Пісок', 1.7, 5, 'від 80 до 150', 0.7),
+('Супісок', 1.8, 12, 'від 10 до 15', 1.5),
+('Супісок', 1.8, 12, 'від 15 до 30', 1.4),
+('Супісок', 1.8, 12, 'від 30 до 45', 1.2),
+('Супісок', 1.8, 12, 'від 45 до 110', 1.0),
+('Супісок', 1.8, 12, 'від 110 до 150', 0.9),
+('Суглинок', 1.95, 19, 'від 10 до 40', 1.4),
+('Ліс', 2.3, 19, 'від 40 до 150', 1.2),
+('Глина', 2.1, 20, 'від 40 до 150', 1.2),
+('Бетон', 2.3, 2, 'від 10 до 15', 1.4),
+('Бетон', 2.3, 2, 'від 15 до 25', 1.2),
+('Бетон', 2.3, 2, 'від 25 до 40', 1.0),
+('Бетон', 2.3, 2, 'від 40 до 65', 0.9),
+('Бетон', 2.3, 2, 'від 65 до 150', 0.7),
+('Бетон', 2.4, 10, 'від 10 до 20', 1.4),
+('Бетон', 2.4, 10, 'від 20 до 35', 1.2),
+('Бетон', 2.4, 10, 'від 35 до 105', 1.0),
+('Бетон', 2.4, 10, 'від 105 до 140', 0.9),
+('Бетон', 2.4, 10, 'від 140 до 150', 0.7),
+('Кладка із глиняної повнотілої цегли', 1.84, 5, 'від 10 до 20', 1.4),
+('Кладка із глиняної повнотілої цегли', 1.84, 5, 'від 20 до 35', 1.2),
+('Кладка із глиняної повнотілої цегли', 1.84, 5, 'від 35 до 50', 1.0),
+('Кладка із силікатної цегли', 1.5, 3, 'від 50 до 80', 0.9),
+('Кладка із силікатної цегли', 1.5, 3, 'від 80 до 100', 0.7),
+('Керамзитобетон', 1.35, 8, 'від 10 до 20', 1.5),
+('Керамзитобетон', 1.35, 8, 'від 20 до 30', 1.4),
+('Керамзитобетон', 1.35, 8, 'від 30 до 65', 1.2),
+('Керамзитобетон', 1.35, 8, 'від 65 до 150', 1.0),
+('Поліетилен', 0.9, NULL, 'від 10 до 20', 3.0),
+('Поліетилен', 0.9, NULL, 'від 20 до 150', 3.4),
+('Дерево', 0.7, 30, 'від 10 до 15', 2.7),
+('Дерево', 0.7, 30, 'від 15 до 150', 3.4),
+('Сталь', 7.8, NULL, '10-150', 0.7);</sql><current_tab id="0"/></tab_sql></sqlb_project>
