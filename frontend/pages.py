@@ -7,8 +7,7 @@ import sqlite3
 
 from config import DB_PATH, LOGO_URL, THEME, DBN_URL, STEPS_SELECT_RESULTS
 from db import store_coeficients_attenuation_coefficients, load_materials, load_shelter_classes, load_building_types, load_building_height_by_type, load_building_density_by_type, load_wall_materials, load_wall_thickness_by_material, get_coefficient_zab, get_coefficient_bud, get_shelter_class
-
-
+from logic import formyla, formula_elements, substituted_values, Az, Azf, Ky, Kn, Kzab, Kbud, KN
 
 
 selected_option_1 = ""  # Змінна для зберігання вибраного варіанту
@@ -24,31 +23,7 @@ description_text_1 = ft.Text(
 def fifth_page(page):
     page.controls.clear()
     print("Результат станом на 5 сторінку, перед обрахунками: ", STEPS_SELECT_RESULTS)
-    #обрахунок 
-    Az = STEPS_SELECT_RESULTS["Az"]
-    Kzab = STEPS_SELECT_RESULTS["coefficient_zab"]
-    Kbud = STEPS_SELECT_RESULTS["coefficient_bud"]
-
-    Ky = 1
-    for coeff in STEPS_SELECT_RESULTS["coefficients"]:
-        Ky = Ky * coeff["ky"]
-
-    Kn = 1
-    for coeff in STEPS_SELECT_RESULTS["coefficients"]:
-        Kn = Kn * coeff["kn"]
-
-    KN = 1.4
-
-    Azf = 1.18 * (Ky * Kn) * (Kzab / Kbud) * KN / (Ky + Kn)
-
-    # Формуємо дані для таблиці
-    formula_elements = [
-        "Aз", "≤", "Aзф", "=", "1.18", "*", "Ky", "*", "Kn", "*", "(", "Kзаб", "/", "Kбуд", ")", "*", "KN", "/", "(", "Ky", "+", "Kn", ")"
-    ]
-    substituted_values = [
-        f"{Az}", "≤", f"{round(Azf, 2)}", "=", "1.18", "*", f"{round(Ky, 2)}", "*", f"{round(Kn, 2)}", "*", "(", f"{round(Kzab, 2)}", "/", f"{round(Kbud, 2)}", ")", "*", f"{round(KN,2)}", "/", "(", f"{round(Ky, 2)}", "+", f"{round(Kn, 2)}", ")"
-    ]
-
+    formyla()
     # Таблиця
     table = ft.DataTable(
         border=ft.border.all(2, "black" if THEME == ft.ThemeMode.LIGHT else "white"),
