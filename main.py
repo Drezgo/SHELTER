@@ -1,4 +1,3 @@
-import sqlite3
 import flet as ft
 
 from config import THEME

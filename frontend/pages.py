@@ -1,6 +1,5 @@
 # Всі сторінки Flet UI
 
-import glob
 from tkinter.font import BOLD
 import flet as ft
 import sqlite3
@@ -709,7 +708,7 @@ def go_back_to_home(page):
     page.controls.clear()
     page.add(welcome_page(page))  # Виклик функції для повернення вмісту першої сторінки
     page.update()
-    # delete_table_G1()
+    delete_table_G1()
     STEPS_SELECT_RESULTS = {}#!!!!!!!!!!!!!! !!!!!!!!!!!!!!! !!!!!!! має стерти всі дані, але не стирає всі! доробити
     # анулювання змінних для зберігання даних з STEPS_SELECT_RESULTS та інші змініні:
 
@@ -817,7 +816,7 @@ def rail(page):
             #     label_content=ft.Text("Налаштування"),
             # ),
         ],
-        on_change=lambda e: navigation_change(page),
+        on_change=lambda e: navigation_change(page, e),
         trailing=ft.IconButton(icon=ft.Icons.BRIGHTNESS_4_SHARP, on_click=lambda e: toggle_theme(page)),
     )
 
