@@ -1,6 +1,32 @@
+from config import STEPS_SELECT_RESULTS
 
+def mainFormula ():
+    #обрахунок 
+    Az = STEPS_SELECT_RESULTS["Az"]
+    Kzab = STEPS_SELECT_RESULTS["coefficient_zab"]
+    Kbud = STEPS_SELECT_RESULTS["coefficient_bud"]
 
+    Ky = 1
+    for coeff in STEPS_SELECT_RESULTS["coefficients"]:
+        Ky = Ky * coeff["ky"]
 
+    Kn = 1
+    for coeff in STEPS_SELECT_RESULTS["coefficients"]:
+        Kn = Kn * coeff["kn"]
+
+    KN = 1.4
+
+    Azf = 1.18 * (Ky * Kn) * (Kzab / Kbud) * KN / (Ky + Kn)
+
+    # дані для таблиці
+    formula_elements = [
+        "Aз", "≤", "Aзф", "=", "1.18", "*", "Ky", "*", "Kn", "*", "(", "Kзаб", "/", "Kбуд", ")", "*", "KN", "/", "(", "Ky", "+", "Kn", ")"
+    ]
+    substituted_values = [
+        f"{Az}", "≤", f"{round(Azf, 2)}", "=", "1.18", "*", f"{round(Ky, 2)}", "*", f"{round(Kn, 2)}", "*", "(", f"{round(Kzab, 2)}", "/", f"{round(Kbud, 2)}", ")", "*", f"{round(KN,2)}", "/", "(", f"{round(Ky, 2)}", "+", f"{round(Kn, 2)}", ")"
+    ]   
+
+    return Az, Azf, formula_elements, substituted_values
 
 
 

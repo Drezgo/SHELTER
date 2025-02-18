@@ -1,2 +1,2 @@
-from .formylas import function
-__all__ = ['function']
+from .formulas import mainFormula
+__all__ = ['mainFormula']
