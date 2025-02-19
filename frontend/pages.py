@@ -5,7 +5,7 @@ import flet as ft
 import sqlite3
 
 from config import DB_PATH, LOGO_URL, THEME, DBN_URL, STEPS_SELECT_RESULTS
-from db import store_coeficients_attenuation_coefficients, load_materials, load_shelter_classes, load_building_types, load_building_height_by_type, load_building_density_by_type, load_wall_materials, load_wall_thickness_by_material, get_coefficient_zab, get_coefficient_bud, get_shelter_class
+from db import store_coeficients_attenuation_coefficients, load_materials, load_subMaterials, load_shelter_classes, load_building_types, load_building_height_by_type, load_building_density_by_type, load_wall_materials, load_wall_thickness_by_material, get_coefficient_zab, get_coefficient_bud, get_shelter_class
 from logic import mainFormula
 
 
@@ -21,7 +21,7 @@ description_text_1 = ft.Text(
 
 def fifth_page(page):
     page.controls.clear()
-    print("Результат станом на 5 сторінку, перед обрахунками: ", STEPS_SELECT_RESULTS)
+    print("Результат на 5 сторінці, перед обрахунками: ", STEPS_SELECT_RESULTS)
 
     # виклик mainFormula() і запис отриманих розрахунків у змінні , Kzab, Kbud, Ky, Kn, KN - не потрібні
     Az, Azf, formula_elements, substituted_values = mainFormula()
@@ -196,56 +196,59 @@ def fourth_page(page):  # 4 сторінка
     )
 
     def go_to_fifth_page(e):
-        # Зберігаємо вибрані значення в сесії
-        page.session.set("building_height", dropdown_left_Pr1.value)
-        page.session.set("building_density", dropdown_left_Pr2.value)
-        page.session.set("wall_thickness", dropdown_right_1kerpich.value)
-        page.session.set("area_relation_percent", dropdown_right_2.value)
+        if type(dropdown_left_Pr1.value) != str or type(dropdown_left_Pr2.value) != str or type(dropdown_right_1kerpich.value) != str or type(dropdown_right_2.value) != str:
+            page.open(snackBar("всі необхідні параметри"))
+        else:
+            # Зберігаємо вибрані значення в сесії
+            page.session.set("building_height", dropdown_left_Pr1.value)
+            page.session.set("building_density", dropdown_left_Pr2.value)
+            page.session.set("wall_thickness", dropdown_right_1kerpich.value)
+            page.session.set("area_relation_percent", dropdown_right_2.value)
 
-        coefficient_zab = get_coefficient_zab(
-            building_type_name=page.session.get("zabudova"),
-            building_height=page.session.get("building_height"),
-            building_density=page.session.get("building_density"),
-        )
-        STEPS_SELECT_RESULTS["coefficient_zab"] = coefficient_zab[0]
+            coefficient_zab = get_coefficient_zab(
+                building_type_name=page.session.get("zabudova"),
+                building_height=page.session.get("building_height"),
+                building_density=page.session.get("building_density"),
+            )
+            STEPS_SELECT_RESULTS["coefficient_zab"] = coefficient_zab[0]
 
-        coefficient_bud = get_coefficient_bud(
-            wall_material_name=page.session.get("material"),
-            building_type_name=page.session.get("zabudova"),
-            wall_thickness=page.session.get("wall_thickness"),
-            area_relation_percent=page.session.get("area_relation_percent"),
-        )
-        STEPS_SELECT_RESULTS["coefficient_bud"] = coefficient_bud[0]
+            coefficient_bud = get_coefficient_bud(
+                wall_material_name=page.session.get("material"),
+                building_type_name=page.session.get("zabudova"),
+                wall_thickness=page.session.get("wall_thickness"),
+                area_relation_percent=page.session.get("area_relation_percent"),
+            )
+            STEPS_SELECT_RESULTS["coefficient_bud"] = coefficient_bud[0]
 
-        print(STEPS_SELECT_RESULTS)
-        # Переходимо на третю сторінку
-        page.controls.clear()
-        fifth_page(page)
-        page.update()
+            print("Результат на 4 сторінці, перед переходом: ",STEPS_SELECT_RESULTS)
+            # Переходимо на третю сторінку
+            page.controls.clear()
+            fifth_page(page)
+            page.update()
 
     page.add(
         ft.Row([
             rail(page),
             ft.VerticalDivider(width=1),
-            ft.Column([
-                ft.Container(
-                    ft.Row(
-                        [
-                            ft.IconButton(
-                                icon=ft.Icons.ARROW_BACK,
-                                tooltip="Назад",
-                                on_click=lambda e: go_back_to_3(page),
-                            )
-                        ],
-                        alignment=ft.MainAxisAlignment.START,
-                    ),
-                    padding=ft.Padding(10, 10, 0, 0),
-                    expand=False,
+            ft.Container(
+                ft.Row(
+                    [
+                        ft.IconButton(
+                            icon=ft.Icons.ARROW_BACK,
+                            tooltip="Назад",
+                            on_click=lambda e: go_back_to_3(page),
+                        )
+                    ],
+                    alignment=ft.MainAxisAlignment.START,
                 ),
+                padding=ft.Padding(10, 10, 0, 0),
+                alignment=ft.alignment.top_left,
+            ),
+            ft.Column([
                 ft.Container(
                     text_block,
                     alignment=ft.alignment.center_left,  # Вирівнювання text_block зліва
-                    padding=ft.Padding(50, 0, 0, 0),
+                    padding=ft.Padding(10, 10, 0, 0),
                     expand=False,
                 ),
                 ft.Row(
@@ -354,38 +357,47 @@ def third_page(page):  # Третя сторінка зроблена по зр�
     )
 
     def go_to_fourth_page(e):
-        # Зберігаємо вибрані значення в сесії
-        page.session.set(
-            "zabudova", dropdown_left_1.value
-        )  
-        page.session.set(
-            "material", dropdown_left_2.value
-        )
-
-        # Переходимо на третю сторінку
-        page.controls.clear()
-        fourth_page(page)
-        page.update()
+        # print(type(dropdown_left_1.value),'-->',dropdown_left_1.value,'--',type(dropdown_left_2.value),'-->',dropdown_left_2.value,)
+        if type(dropdown_left_1.value) != str or type(dropdown_left_2.value) != str:
+            if type(dropdown_left_1.value) != str and type(dropdown_left_2.value) != str :
+                page.open(snackBar("характер забудови та матеріал стін огороджувальної конструкції"))
+            elif type(dropdown_left_1.value) != str :
+                page.open(snackBar("характер забудови"))
+            elif type(dropdown_left_2.value) != str :
+                page.open(snackBar("матеріал стін огороджувальної конструкції"))
+        else:
+            # Зберігаємо вибрані значення в сесії
+            page.session.set(
+                "zabudova", dropdown_left_1.value
+            )  
+            page.session.set(
+                "material", dropdown_left_2.value
+            )
+            # Переходимо на третю сторінку
+            page.controls.clear()
+            fourth_page(page)
+            page.update()
 
     page.add(
         ft.Row([
             rail(page),
             ft.VerticalDivider(width=1),
+            ft.Container(
+                ft.Row(
+                    [
+                        ft.IconButton(
+                            icon=ft.Icons.ARROW_BACK,
+                            tooltip="Назад",
+                            on_click=lambda e: go_back_to_2(page),
+                        )
+                    ],
+                    alignment=ft.MainAxisAlignment.START,
+                ),
+                padding=ft.Padding(10, 10, 0, 0),
+                alignment=ft.alignment.top_left,
+            ),
             ft.Column(
-                    [ft.Container(
-                        ft.Row(
-                            [
-                                ft.IconButton(
-                                    icon=ft.Icons.ARROW_BACK,
-                                    tooltip="Назад",
-                                    on_click=lambda e: go_back_to_2(page),
-                                )
-                            ],
-                            alignment=ft.MainAxisAlignment.START,
-                        ),
-                        padding=ft.Padding(10, 10, 0, 0),
-                        expand=False,
-                    ),
+                    [
                     ft.Text(
                         "Визначення коефіцієнту умов розташування",
                         size=30,
@@ -432,12 +444,18 @@ def second_page(page):
 
     # завантажуємо матеріали з бази даних
     materials = load_materials()
+    submaterials = load_subMaterials()
 
     # створюємо dropdown
     options = []
     for material in materials:
         name = material[0]
         options.append(ft.dropdown.Option(key=name))
+    
+    subOptions = []
+    for material in submaterials:
+        name = material[0]
+        subOptions.append(ft.dropdown.Option(key=name))
 
     material_dropdown= ft.Dropdown(
         label="Вибір матеріалу",
@@ -445,20 +463,33 @@ def second_page(page):
         width=300,
         on_change=lambda e: material_dropdown_change(e),
     )
+    
+    subMaterial_dropdown= ft.Dropdown(
+        label="Вибір підматеріалу (яким усипається укриття)",
+        options=subOptions,
+        width=300,
+        on_change=lambda e: sub_material_dropdown_change(e),
+    )
 
     # Функція для оновлення тексту вибору
     def material_dropdown_change(e):
         nonlocal material_dropdown
         material_dropdown = e.control.value
-    
-    txt_number_2 = ft.TextField(
+        print('\nmaterial_dropdown_change(e) ----- ', type(material_dropdown), material_dropdown)
+
+    def sub_material_dropdown_change(e):
+        nonlocal subMaterial_dropdown
+        subMaterial_dropdown = e.control.value
+        print('subMaterial_dropdown_change(e) ----- ', type(subMaterial_dropdown), subMaterial_dropdown)
+
+    txt_number_2 = ft.TextField( # Поле для введення товщини (int)
         value="10", 
         text_align=ft.TextAlign.RIGHT, 
         width=100, 
-        # keyboard_type=ft.KeyboardType.NUMBER,  # Включає числову клавіатуру
+        # keyboard_type=ft.KeyboardType.NUMBER,  # Включає числову клавіатуру 
         # on_change=lambda e: validate_input(e),  # Перевірка на зміну тексту
-        on_blur=lambda e: validate_input(e),  # Перевірка при втраті фокусу               мабуть буде    ERROR
-    )  # Поле для введення числа
+        on_blur=lambda e: validate_input(e),  # Перевірка при втраті фокусу 
+    )  
 
     def minus_click(page):
         value = int(txt_number_2.value)
@@ -511,13 +542,14 @@ def second_page(page):
     )
 
     def load_data():
-        # Завантажуємо дані з бази
+        # завантажуємо дані з бази
         connection = sqlite3.connect(DB_PATH)
         cursor = connection.cursor()
         cursor.execute("SELECT rowid, Material, Thickness FROM Uses_choice_G1")
         data = cursor.fetchall()
         connection.close()
 
+        # і завантажуємо данні в рядки table()
         table.rows.clear()
         for row in data:
             table.rows.append(
@@ -549,6 +581,7 @@ def second_page(page):
         connection = sqlite3.connect(DB_PATH)
         cursor = connection.cursor()
         material = material_dropdown
+        subMaterial = subMaterial_dropdown     ############################# з табличкою г4 зупинився тут subMaterials)
         thickness = txt_number_2.value
         cursor.execute(
             "INSERT INTO Uses_choice_G1 (Material, Thickness) VALUES (?, ?)",
@@ -568,18 +601,68 @@ def second_page(page):
         load_data()
 
     def edit_row(row_id):
-        # Логіка редагування (заповнення полів значеннями)
+        # Логіка редагування 
         pass
 
     def go_to_third_page(e):
-        # Переходимо на третю сторінку
-        page.controls.clear()
+        if len(table.rows) == 0:
+            page.open(snackBar("матеріал та товщину стін"))
+        else:
+            page.controls.clear()
+            store_coeficients_attenuation_coefficients()
+            third_page(page)
+            page.update()
 
-        store_coeficients_attenuation_coefficients()
+    def close_dialog(e):
+        if type(material_dropdown) != str:
+            page.close(dialog)
+            page.open(snackBar("матеріал стіни"))
+        else:
+            add_to_db(e)
+            page.close(dialog)
+            page.update()
 
-        third_page(page)
-        page.update()
-
+    # Створюємо модальне вікно для введення даних
+    dialog = ft.AlertDialog(
+        modal=True,
+        # title=ft.Text(""),
+        content=ft.Column(
+            [
+                # ft.Container(content = ft.Text("Додати матеріал"), alignment=ft.MainAxisAlignment.CENTER),
+                ft.Text(
+                    "1. Виберіть матеріал стіни (можна створити декілька шарів стін)",
+                    size=16,
+                    weight="bold",
+                ),
+                material_dropdown,
+                ft.Text(
+                    "2. Вкажіть товщину шару матеріалу стіни (см)*",
+                    size=16,
+                    weight="bold",
+                ),
+                row,
+                ft.Text(
+                    "* Товщина має бути від 10 до 150 см та кратною 5 см ",
+                    size=12,
+                    weight="bold",
+                    color=ft.Colors.RED,
+                )
+            ],
+            # alignment=ft.MainAxisAlignment.CENTER,
+            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+            # expand=True,
+            spacing=20,
+            height=250,  # Обмежуємо висоту контенту
+            scroll=ft.ScrollMode.AUTO,  # Додаємо скролінг, якщо контент виходить за межі
+        ),
+        actions=[
+            ft.TextButton("Скасувати", on_click= lambda e: page.close(dialog)),
+            ft.TextButton("Додати", on_click=close_dialog),
+        ],
+        actions_alignment=ft.CrossAxisAlignment.CENTER,
+        
+    )
+    
     page.add(
         ft.Row([
             rail(page),
@@ -615,27 +698,9 @@ def second_page(page):
                                     ),
                                 ],
                             ),
-                            ft.Text(
-                                "1. Виберіть матеріал стіни (стін можна створити декілька)",
-                                size=16,
-                                weight="bold",
-                            ),
-                            material_dropdown,
-                            ft.Text(
-                                "2. Вкажіть товщину шару матеріалу стіни (см)*",
-                                size=16,
-                                weight="bold",
-                            ),
-                            row,
-                            ft.Text(
-                                "* Товщина має бути від 10 до 150 см та кратною 5 см ",
-                                size=12,
-                                weight="bold",
-                                color=ft.Colors.RED,
-                            ),
                             ft.Row(
                                 [
-                                    ft.OutlinedButton("Додати", on_click=add_to_db, width=150, style=ft.ButtonStyle(side=ft.BorderSide(2, ft.Colors.BLUE))),
+                                    ft.OutlinedButton("Додати матеріал", on_click = lambda e: page.open(dialog), width=150, style=ft.ButtonStyle(side=ft.BorderSide(2, ft.Colors.BLUE))),
                                     ft.ElevatedButton(
                                         content=ft.Row(
                                             [
@@ -679,7 +744,25 @@ def second_page(page):
             ),
         ],expand=True)
     )
+
     load_data()
+
+def snackBar(value):
+        snackBar = ft.SnackBar(
+            content=ft.Row(
+                [
+                    ft.Icon(ft.Icons.WARNING_AMBER_ROUNDED, color=ft.Colors.AMBER, size=40),
+                    ft.Text(f"Помилка! Спочатку виберіть {value}.", weight=ft.FontWeight.BOLD, color=ft.Colors.BLACK),
+                ],
+                alignment=ft.MainAxisAlignment.START, 
+                spacing=10,  
+            ),
+            bgcolor=ft.Colors.AMBER_100,
+            action="OK",
+            duration=3000,
+            shape=ft.RoundedRectangleBorder(radius=20),
+        )
+        return snackBar
 
 # Функція для повернення на першу сторінку
 def go_back_to_home(page):
@@ -1145,6 +1228,13 @@ def first_page(page):
 
         page.update()
 
+    def go_to_second_page(e):
+        # print(type(dropdown.value),'---',selected_option_1)
+        if type(dropdown.value) != str and selected_option_1 == "":
+            page.open(snackBar("клас сховища"))
+        else:
+            second_page(page)
+
     return ft.Row(
         [
             rail(page),
@@ -1165,7 +1255,7 @@ def first_page(page):
                             ],
                             alignment=ft.MainAxisAlignment.CENTER,  # Вирівнювання по центру
                         ),
-                        on_click=lambda e: second_page(page),  # Функція переходу на другу сторінку
+                        on_click=go_to_second_page,  # Функція переходу на другу сторінку
                         width=160,  # Ширина кнопки
                         bgcolor=ft.Colors.GREEN_200,
                         color=ft.Colors.GREEN_900,

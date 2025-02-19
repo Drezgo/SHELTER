@@ -1,3 +1,4 @@
+
 from config import STEPS_SELECT_RESULTS
 
 def mainFormula ():
