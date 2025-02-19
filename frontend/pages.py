@@ -26,7 +26,7 @@ def fifth_page(page):
     # виклик mainFormula() і запис отриманих розрахунків у змінні , Kzab, Kbud, Ky, Kn, KN - не потрібні
     Az, Azf, formula_elements, substituted_values = mainFormula()
     
-    # Таблиця
+    # Таблиця для відображення обрахунків
     table = ft.DataTable(
         border=ft.border.all(2, "black" if THEME == ft.ThemeMode.LIGHT else "white"),
         border_radius=20,
