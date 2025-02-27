@@ -442,9 +442,11 @@ def third_page(page):  # Третя сторінка зроблена по зр�
 def second_page(page):
     page.controls.clear()
 
+    material_dropdown_chosen=0
     # завантажуємо матеріали з бази даних
     materials = load_materials()
-    submaterials = load_subMaterials()
+    submaterials = load_subMaterials(material_dropdown_chosen)
+    depthSubMaterial = {} #load_depthSubMaterials() ############################# з табличкою г4 зупинився тут subMaterials)
 
     # створюємо dropdown
     options = []
@@ -456,6 +458,11 @@ def second_page(page):
     for material in submaterials:
         name = material[0]
         subOptions.append(ft.dropdown.Option(key=name))
+        
+    depthSubOptions = []
+    for material in depthSubMaterial:
+        name = material[0]
+        depthSubOptions.append(ft.dropdown.Option(key=name))
 
     material_dropdown= ft.Dropdown(
         label="Вибір матеріалу",
@@ -465,22 +472,55 @@ def second_page(page):
     )
     
     subMaterial_dropdown= ft.Dropdown(
-        label="Вибір підматеріалу (яким усипається укриття)",
+        label="Вибір підматеріалу",
         options=subOptions,
         width=300,
         on_change=lambda e: sub_material_dropdown_change(e),
     )
 
+    depthSubMaterial_dropdown= ft.Dropdown(
+        label="Вибір підматеріалу",
+        options=depthSubOptions,
+        width=300,
+        on_change=lambda e: sub_material_dropdown_change(e),
+    )
+    # Функція для оновлення тексту вибору підматеріалу яка оновлюється в залежності від вибору
+    def update_subMaterial_dropdown():
+        submaterials = load_subMaterials(material_dropdown_chosen)  
+        
+        subOptions = []
+        for material in submaterials:
+            name = material[0]
+            subOptions.append(ft.dropdown.Option(key=name))
+        
+        subMaterial_dropdown.options = subOptions
+        subMaterial_dropdown.update()
+        
     # Функція для оновлення тексту вибору
     def material_dropdown_change(e):
         nonlocal material_dropdown
+        nonlocal material_dropdown_chosen
+        
+        materials_id = {
+        "Бетон": 1,
+        "Цегла": 2,
+        "Грунт": 3,
+        "Дерево": 4,
+        "Поліетилен": 5,
+        "Сталь": 6,
+        }
+        
         material_dropdown = e.control.value
+        material_dropdown_chosen = materials_id.get(material_dropdown,'Unknown')
+        update_subMaterial_dropdown()
+        
         print('\nmaterial_dropdown_change(e) ----- ', type(material_dropdown), material_dropdown)
+        page.update()
 
     def sub_material_dropdown_change(e):
-        nonlocal subMaterial_dropdown
-        subMaterial_dropdown = e.control.value
-        print('subMaterial_dropdown_change(e) ----- ', type(subMaterial_dropdown), subMaterial_dropdown)
+        # nonlocal subMaterial_dropdown
+        # subMaterial_dropdown = e.control.value
+        print('subMaterial_dropdown_change(e) ----- ', type(subMaterial_dropdown.value), subMaterial_dropdown.value)
 
     txt_number_2 = ft.TextField( # Поле для введення товщини (int)
         value="10", 
@@ -630,29 +670,42 @@ def second_page(page):
             [
                 # ft.Container(content = ft.Text("Додати матеріал"), alignment=ft.MainAxisAlignment.CENTER),
                 ft.Text(
-                    "1. Виберіть матеріал стіни (можна створити декілька шарів стін)",
+                    "1. Виберіть матеріал стіни огороджувалної конструкції (можна створити декілька шарів стін)",
                     size=16,
-                    weight="bold",
+                    # weight="bold",
+                    width=450
                 ),
                 material_dropdown,
                 ft.Text(
                     "2. Вкажіть товщину шару матеріалу стіни (см)*",
                     size=16,
-                    weight="bold",
+                    # weight="bold",
                 ),
                 row,
                 ft.Text(
                     "* Товщина має бути від 10 до 150 см та кратною 5 см ",
                     size=12,
-                    weight="bold",
+                    # weight="bold",
                     color=ft.Colors.RED,
-                )
+                ),
+                ft.Text(
+                    "3. Виберіть підматеріал (яким усипається укриття)",
+                    size=16,
+                    # weight="bold",
+                ),
+                subMaterial_dropdown,
+                ft.Text(
+                    "4. Вкажіть товщину шару підматеріалу (см)",
+                    size=16,
+                    # weight="bold",
+                ),
+                
             ],
             # alignment=ft.MainAxisAlignment.CENTER,
             horizontal_alignment=ft.CrossAxisAlignment.CENTER,
             # expand=True,
             spacing=20,
-            height=250,  # Обмежуємо висоту контенту
+            height=400,  # Обмежуємо висоту контенту
             scroll=ft.ScrollMode.AUTO,  # Додаємо скролінг, якщо контент виходить за межі
         ),
         actions=[
@@ -697,6 +750,11 @@ def second_page(page):
                                         style=ft.TextStyle(weight=ft.FontWeight.BOLD, color=ft.Colors.GREEN_400),
                                     ),
                                 ],
+                            ),
+                            ft.Text(
+                                "Додайте матеріал стіни огороджувалної конструкції ",
+                                size=20,
+                                weight="bold",
                             ),
                             ft.Row(
                                 [

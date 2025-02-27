@@ -51,21 +51,39 @@ def load_materials():
     connection.close()
     return data
 
-def load_subMaterials():
+def load_subMaterials(parent_id):
     connection = sqlite3.connect(DB_PATH)
     cursor = connection.cursor()
     cursor.execute(
         """
-        SELECT 
+        SELECT DISTINCT 
         Material
         
         FROM subMaterial
+        WHERE parent_material_id = ?
         ORDER BY Material
-        """
+        """,
+        (parent_id,)
     )
     data = cursor.fetchall()
     connection.close()
     return data
+
+# def load_depthSubMaterials():
+#     connection = sqlite3.connect(DB_PATH)
+#     cursor = connection.cursor()
+#     # cursor.execute(
+#     #     """
+#     #     SELECT  
+#     #     Material
+
+#     #     FROM subMaterial
+#     #     ORDER BY Material
+#     #     """
+#     # )
+#     data = cursor.fetchall()
+#     connection.close()
+#     return data
 
 def load_shelter_classes():
     connection = sqlite3.connect(DB_PATH)
